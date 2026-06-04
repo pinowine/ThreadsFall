@@ -1,0 +1,22 @@
+{
+  "bosses": [
+    {
+      "id": "FalseHelper",
+      "nameKey": "boss.false_helper.name",
+      "themeKey": "boss.false_helper.theme",
+      "effectTypes": ["FakeNextPreview", "ReduceTrust"]
+    },
+    {
+      "id": "Spammer",
+      "nameKey": "boss.spammer.name",
+      "themeKey": "boss.spammer.theme",
+      "effectTypes": ["AddGarbageCell", "HideNextPreview"]
+    },
+    {
+      "id": "Algorithm",
+      "nameKey": "boss.algorithm.name",
+      "themeKey": "boss.algorithm.theme",
+      "effectTypes": ["IncreaseNoise", "ReduceTrust"]
+    }
+  ]
+}

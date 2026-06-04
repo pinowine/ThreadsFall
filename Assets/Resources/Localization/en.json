@@ -1,0 +1,152 @@
+{
+  "entries": [
+    {
+      "key": "boss.none.name",
+      "value": "No Boss"
+    },
+    {
+      "key": "boss.false_helper.name",
+      "value": "The False Helper"
+    },
+    {
+      "key": "boss.spammer.name",
+      "value": "The Spammer"
+    },
+    {
+      "key": "boss.algorithm.name",
+      "value": "The Algorithm"
+    },
+    {
+      "key": "boss.false_helper.theme",
+      "value": "Fake advice and misleading previews."
+    },
+    {
+      "key": "boss.spammer.theme",
+      "value": "Clutter, noise, and garbage blocks."
+    },
+    {
+      "key": "boss.algorithm.theme",
+      "value": "Rule-based habit watching, with an ML hook reserved."
+    },
+    {
+      "key": "line.false_helper.round_start.001",
+      "value": "Put it there. I have never been wrong in a useful way."
+    },
+    {
+      "key": "line.false_helper.fake_preview.001",
+      "value": "The preview was fake. Your trust, however, was real."
+    },
+    {
+      "key": "line.false_helper.boss_start.001",
+      "value": "I will help extra carefully. That is the exciting part."
+    },
+    {
+      "key": "line.spammer.round_start.001",
+      "value": "FIRST."
+    },
+    {
+      "key": "line.spammer.garbage.001",
+      "value": "This is engagement."
+    },
+    {
+      "key": "line.spammer.boss_start.001",
+      "value": "I brought more comments than board space."
+    },
+    {
+      "key": "line.algorithm.boss_start.001",
+      "value": "I studied your habits. There were fewer than expected."
+    },
+    {
+      "key": "line.algorithm.high_stack.001",
+      "value": "Your structure is becoming a recommendation problem."
+    },
+    {
+      "key": "upgrade.sarcastic_edge.name",
+      "value": "Sarcastic Edge"
+    },
+    {
+      "key": "upgrade.sarcastic_edge.desc",
+      "value": "Gain +1 coin when you clear a line."
+    },
+    {
+      "key": "upgrade.bait_hook.name",
+      "value": "Bait Hook"
+    },
+    {
+      "key": "upgrade.bait_hook.desc",
+      "value": "Clearing 2 or more lines grants bonus coins."
+    },
+    {
+      "key": "upgrade.fact_check.name",
+      "value": "Fact Check"
+    },
+    {
+      "key": "upgrade.fact_check.desc",
+      "value": "Once per round, block a fake preview."
+    },
+    {
+      "key": "ui.empty",
+      "value": ""
+    },
+    {
+      "key": "ui.boss.awaiting",
+      "value": "..."
+    },
+    {
+      "key": "ui.hud.coins",
+      "value": "Coins: {0}"
+    },
+    {
+      "key": "ui.hud.round",
+      "value": "Round: {0}"
+    },
+    {
+      "key": "ui.hud.boss",
+      "value": "Boss: {0}"
+    },
+    {
+      "key": "ui.hud.locale",
+      "value": "Locale: {0}"
+    },
+    {
+      "key": "ui.hud.coins.zero",
+      "value": "Coins: 0"
+    },
+    {
+      "key": "ui.hud.round.zero",
+      "value": "Round: 0"
+    },
+    {
+      "key": "ui.hud.boss.none",
+      "value": "Boss: No Boss"
+    },
+    {
+      "key": "ui.hud.locale.en",
+      "value": "Locale: en"
+    },
+    {
+      "key": "ui.preview.title",
+      "value": "Next Preview"
+    },
+    {
+      "key": "ui.preview.normal",
+      "value": "Normal preview placeholder"
+    },
+    {
+      "key": "ui.preview.fake_warning",
+      "value": "Fake preview!"
+    },
+    {
+      "key": "ui.shop.title",
+      "value": "Shop"
+    },
+    {
+      "key": "ui.shop.cost",
+      "value": "Cost: {0}"
+    },
+    {
+      "key": "ui.shop.buy",
+      "value": "Buy"
+    }
+  ]
+}

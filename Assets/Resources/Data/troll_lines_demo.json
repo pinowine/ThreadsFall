@@ -1,0 +1,92 @@
+{
+  "lines": [
+    {
+      "id": "false_helper_round_start_001",
+      "bossId": "FalseHelper",
+      "trigger": "RoundStart",
+      "style": "Sarcasm",
+      "intensity": 1,
+      "textKey": "line.false_helper.round_start.001",
+      "effectType": "None",
+      "durationPieces": 0,
+      "cooldownSeconds": 1.5
+    },
+    {
+      "id": "false_helper_fake_preview_001",
+      "bossId": "FalseHelper",
+      "trigger": "FakePreviewSuccess",
+      "style": "Manipulation",
+      "intensity": 2,
+      "textKey": "line.false_helper.fake_preview.001",
+      "effectType": "FakeNextPreview",
+      "durationPieces": 3,
+      "cooldownSeconds": 2.5
+    },
+    {
+      "id": "false_helper_boss_start_001",
+      "bossId": "FalseHelper",
+      "trigger": "BossPhaseStart",
+      "style": "Bait",
+      "intensity": 2,
+      "textKey": "line.false_helper.boss_start.001",
+      "effectType": "ReduceTrust",
+      "durationPieces": 2,
+      "cooldownSeconds": 3.0
+    },
+    {
+      "id": "spammer_round_start_001",
+      "bossId": "Spammer",
+      "trigger": "RoundStart",
+      "style": "Spam",
+      "intensity": 1,
+      "textKey": "line.spammer.round_start.001",
+      "effectType": "None",
+      "durationPieces": 0,
+      "cooldownSeconds": 1.0
+    },
+    {
+      "id": "spammer_garbage_001",
+      "bossId": "Spammer",
+      "trigger": "LineClear",
+      "style": "Spam",
+      "intensity": 2,
+      "textKey": "line.spammer.garbage.001",
+      "effectType": "AddGarbageCell",
+      "durationPieces": 0,
+      "cooldownSeconds": 2.0
+    },
+    {
+      "id": "spammer_boss_start_001",
+      "bossId": "Spammer",
+      "trigger": "BossPhaseStart",
+      "style": "Spam",
+      "intensity": 2,
+      "textKey": "line.spammer.boss_start.001",
+      "effectType": "HideNextPreview",
+      "durationPieces": 2,
+      "cooldownSeconds": 3.0
+    },
+    {
+      "id": "algorithm_boss_start_001",
+      "bossId": "Algorithm",
+      "trigger": "BossPhaseStart",
+      "style": "Manipulation",
+      "intensity": 3,
+      "textKey": "line.algorithm.boss_start.001",
+      "effectType": "ReduceTrust",
+      "durationPieces": 3,
+      "cooldownSeconds": 4.0
+    },
+    {
+      "id": "algorithm_high_stack_001",
+      "bossId": "Algorithm",
+      "trigger": "HighStack",
+      "style": "FactCheck",
+      "intensity": 2,
+      "textKey": "line.algorithm.high_stack.001",
+      "effectType": "IncreaseNoise",
+      "durationPieces": 3,
+      "cooldownSeconds": 3.0
+    }
+  ]
+}

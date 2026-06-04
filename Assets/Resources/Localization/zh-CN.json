@@ -1,0 +1,152 @@
+{
+  "entries": [
+    {
+      "key": "boss.none.name",
+      "value": "无首领"
+    },
+    {
+      "key": "boss.false_helper.name",
+      "value": "虚假助手"
+    },
+    {
+      "key": "boss.spammer.name",
+      "value": "刷屏者"
+    },
+    {
+      "key": "boss.algorithm.name",
+      "value": "算法"
+    },
+    {
+      "key": "boss.false_helper.theme",
+      "value": "虚假建议和误导预览。"
+    },
+    {
+      "key": "boss.spammer.theme",
+      "value": "杂音、刷屏和垃圾块。"
+    },
+    {
+      "key": "boss.algorithm.theme",
+      "value": "先用规则观察习惯，预留机器学习接口。"
+    },
+    {
+      "key": "line.false_helper.round_start.001",
+      "value": "放那里吧。我从来没有以有用的方式错过。"
+    },
+    {
+      "key": "line.false_helper.fake_preview.001",
+      "value": "预览是假的。但你的信任是真的。"
+    },
+    {
+      "key": "line.false_helper.boss_start.001",
+      "value": "我会格外认真地帮你。这正是刺激的地方。"
+    },
+    {
+      "key": "line.spammer.round_start.001",
+      "value": "第一。"
+    },
+    {
+      "key": "line.spammer.garbage.001",
+      "value": "这叫互动率。"
+    },
+    {
+      "key": "line.spammer.boss_start.001",
+      "value": "我带来的评论比棋盘空间还多。"
+    },
+    {
+      "key": "line.algorithm.boss_start.001",
+      "value": "我研究了你的习惯。比预想中少。"
+    },
+    {
+      "key": "line.algorithm.high_stack.001",
+      "value": "你的结构正在变成一个推荐问题。"
+    },
+    {
+      "key": "upgrade.sarcastic_edge.name",
+      "value": "讽刺边缘"
+    },
+    {
+      "key": "upgrade.sarcastic_edge.desc",
+      "value": "每次消行时额外获得 1 金币。"
+    },
+    {
+      "key": "upgrade.bait_hook.name",
+      "value": "诱饵钩"
+    },
+    {
+      "key": "upgrade.bait_hook.desc",
+      "value": "一次消除 2 行或更多时，获得额外金币。"
+    },
+    {
+      "key": "upgrade.fact_check.name",
+      "value": "事实核查"
+    },
+    {
+      "key": "upgrade.fact_check.desc",
+      "value": "每轮一次，阻止假预览。"
+    },
+    {
+      "key": "ui.empty",
+      "value": ""
+    },
+    {
+      "key": "ui.boss.awaiting",
+      "value": "……"
+    },
+    {
+      "key": "ui.hud.coins",
+      "value": "金币：{0}"
+    },
+    {
+      "key": "ui.hud.round",
+      "value": "回合：{0}"
+    },
+    {
+      "key": "ui.hud.boss",
+      "value": "首领：{0}"
+    },
+    {
+      "key": "ui.hud.locale",
+      "value": "语言：{0}"
+    },
+    {
+      "key": "ui.hud.coins.zero",
+      "value": "金币：0"
+    },
+    {
+      "key": "ui.hud.round.zero",
+      "value": "回合：0"
+    },
+    {
+      "key": "ui.hud.boss.none",
+      "value": "首领：无首领"
+    },
+    {
+      "key": "ui.hud.locale.en",
+      "value": "语言：en"
+    },
+    {
+      "key": "ui.preview.title",
+      "value": "下一个方块"
+    },
+    {
+      "key": "ui.preview.normal",
+      "value": "正常预览占位"
+    },
+    {
+      "key": "ui.preview.fake_warning",
+      "value": "假预览！"
+    },
+    {
+      "key": "ui.shop.title",
+      "value": "商店"
+    },
+    {
+      "key": "ui.shop.cost",
+      "value": "价格：{0}"
+    },
+    {
+      "key": "ui.shop.buy",
+      "value": "购买"
+    }
+  ]
+}

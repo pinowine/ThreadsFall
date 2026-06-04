@@ -1,0 +1,28 @@
+{
+  "upgrades": [
+    {
+      "id": "SarcasticEdge",
+      "nameKey": "upgrade.sarcastic_edge.name",
+      "descKey": "upgrade.sarcastic_edge.desc",
+      "cost": 3,
+      "effect": "LineClearCoinBonus",
+      "value": 1
+    },
+    {
+      "id": "BaitHook",
+      "nameKey": "upgrade.bait_hook.name",
+      "descKey": "upgrade.bait_hook.desc",
+      "cost": 4,
+      "effect": "MultiLineCoinBonus",
+      "value": 1
+    },
+    {
+      "id": "FactCheck",
+      "nameKey": "upgrade.fact_check.name",
+      "descKey": "upgrade.fact_check.desc",
+      "cost": 5,
+      "effect": "BlockFakeNextPreview",
+      "value": 1
+    }
+  ]
+}
