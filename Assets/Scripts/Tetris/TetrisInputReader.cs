@@ -87,7 +87,7 @@ public class TetrisInputReader : MonoBehaviour
 
         Vector2Int direction = Vector2Int.zero;
 
-        // Prefer one cardinal direction per event; diagonals resolve by this priority.
+        // prefer one cardinal direction per event; diagonals resolve by this priority
         if (value.x > 0.5f)
             direction = Vector2Int.right;
         else if (value.x < -0.5f)

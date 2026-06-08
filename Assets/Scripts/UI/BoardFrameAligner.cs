@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(RectTransform))]
 public class BoardFrameAligner : MonoBehaviour
 {
-    // Keeps the UI frame glued to the world-space board in play mode and while editing.
+    // keeps the UI frame glued to the world-space board
     [SerializeField] private Canvas canvas;
     [SerializeField] private Camera worldCamera;
     [SerializeField] private TetrisBoardController boardController;
@@ -51,7 +51,7 @@ public class BoardFrameAligner : MonoBehaviour
         Vector3 worldMin = boardController.BoardWorldMin;
         Vector3 worldMax = boardController.BoardWorldMax;
 
-        // Convert board corners through screen space into the canvas' local plane.
+        // convert board corners through screen space into the canvas' local plane
         Vector2 screenMin = cameraForWorld.WorldToScreenPoint(worldMin);
         Vector2 screenMax = cameraForWorld.WorldToScreenPoint(worldMax);
 

@@ -57,16 +57,61 @@ public class RunStatsController : MonoBehaviour
         NotifyChanged();
     }
 
+    public void AddAttention(int amount)
+    {
+        if (amount == 0)
+            return;
+
+        Attention = Mathf.Max(0, Attention + amount);
+        GameEvents.CoinsChanged(Attention);
+        NotifyChanged();
+    }
+
+    public bool TrySpendAttention(int cost)
+    {
+        int safeCost = Mathf.Max(0, cost);
+
+        if (Attention < safeCost)
+            return false;
+
+        Attention -= safeCost;
+        GameEvents.CoinsChanged(Attention);
+        NotifyChanged();
+        return true;
+    }
+
     public void SetComposure(int composure)
     {
         Composure = Mathf.Max(0, composure);
         NotifyChanged();
     }
 
+    public void AdjustComposure(int delta)
+    {
+        SetComposure(Composure + delta);
+    }
+
+    public bool TrySpendComposure(int cost)
+    {
+        int safeCost = Mathf.Max(0, cost);
+
+        if (Composure < safeCost)
+            return false;
+
+        Composure -= safeCost;
+        NotifyChanged();
+        return true;
+    }
+
     public void SetNoise(int noise)
     {
         Noise = Mathf.Max(0, noise);
         NotifyChanged();
+    }
+
+    public void AdjustNoise(int delta)
+    {
+        SetNoise(Noise + delta);
     }
 
     private void GetLineClearReward(int linesCleared, out int attentionReward, out int scoreReward)

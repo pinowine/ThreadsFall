@@ -172,6 +172,7 @@ MonoBehaviour:
     targetLines: 0
     targetScore: 0
     rewardAttention: 0
+    manualPressureLabel: 0
   - roundId: round_02
     displayNameKey: 
     bossId: 2
@@ -179,6 +180,7 @@ MonoBehaviour:
     targetLines: 0
     targetScore: 0
     rewardAttention: 0
+    manualPressureLabel: 0
   - roundId: round_03
     displayNameKey: 
     bossId: 3
@@ -186,6 +188,7 @@ MonoBehaviour:
     targetLines: 0
     targetScore: 0
     rewardAttention: 0
+    manualPressureLabel: 0
   boardController: {fileID: 2119857506}
   pieceProvider: {fileID: 1505363291}
   statsController: {fileID: 188029236}
@@ -195,6 +198,11 @@ MonoBehaviour:
   intermissionPanelView: {fileID: 299773904}
   statsHudView: {fileID: 1260378810}
   enableDebugHotkeys: 0
+  enableTrainingLogs: 1
+  echoTrainingLogsToConsole: 1
+  writeTrainingLogsToFile: 1
+  lossLookaheadPieces: 5
+  noiseNormalizationMax: 100
 --- !u!114 &188029236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,10 +480,10 @@ RectTransform:
   - {fileID: 1683483484}
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.7, y: 0.08}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 2, y: -6}
-  m_SizeDelta: {x: -20, y: -36}
+  m_AnchorMin: {x: 0.66700006, y: 0.08}
+  m_AnchorMax: {x: 0.93875015, y: 0.43333325}
+  m_AnchoredPosition: {x: -1, y: 6}
+  m_SizeDelta: {x: -2, y: -12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &409183317
 MonoBehaviour:
@@ -814,7 +822,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -96, y: 0}
+  m_AnchoredPosition: {x: -43.68, y: 0}
   m_SizeDelta: {x: 160, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &736047184
@@ -2283,10 +2291,10 @@ RectTransform:
   - {fileID: 1487997953}
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.7, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.92}
-  m_AnchoredPosition: {x: 2, y: -8}
-  m_SizeDelta: {x: -20, y: -32}
+  m_AnchorMin: {x: 0.66700006, y: 0.5}
+  m_AnchorMax: {x: 0.93875015, y: 0.92}
+  m_AnchoredPosition: {x: 0, y: -8}
+  m_SizeDelta: {x: -2, y: -32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1828873760
 MonoBehaviour:
@@ -2759,7 +2767,7 @@ Transform:
   m_GameObject: {fileID: 2119857504}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10.5, y: -9.5, z: 0}
+  m_LocalPosition: {x: -7.23, y: -9.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

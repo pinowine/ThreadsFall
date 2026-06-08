@@ -36,7 +36,6 @@ public class TetrisBoardController : MonoBehaviour
     [SerializeField] private Color colorL = new(1f, 0.55f, 0f);
 
     public event Action PieceLocked;
-    public event Action<TetrisPiecePlacementInfo> PiecePlaced;
     public event Action<int> LinesCleared;
     public event Action RoundPiecesExhausted;
     public event Action GameOver;
@@ -60,11 +59,6 @@ public class TetrisBoardController : MonoBehaviour
     private readonly List<Transform> activeVisuals = new();
 
     private float fallTimer;
-    private float activePieceSpawnTime;
-    private int activePieceMoveInputs;
-    private int activePieceSoftDropInputs;
-    private int activePieceRotationInputs;
-    private bool activePieceUsedHardDrop;
     private bool hasActivePiece;
     private bool gameOverRaised;
     private MaterialPropertyBlock blockPropertyBlock;
@@ -154,7 +148,7 @@ public class TetrisBoardController : MonoBehaviour
 
     public bool TrySpawnPieceFromProvider(out bool providerExhausted)
     {
-        // Callers need to distinguish an empty round from a blocked spawn.
+        // Callers need to distinguish an empty round from a blocked spawn
         providerExhausted = false;
 
         if (pieceProvider == null)
@@ -183,8 +177,6 @@ public class TetrisBoardController : MonoBehaviour
         activeType = type;
         activeCells = TetrominoShape.GetCells(type);
         activePosition = new Vector2Int(width / 2, height - 2);
-        ResetActivePieceTelemetry();
-
         if (!IsValidPosition(activePosition, activeCells))
         {
             RaiseGameOver("Game Over: cannot spawn piece.");
@@ -196,8 +188,6 @@ public class TetrisBoardController : MonoBehaviour
 
         hasActivePiece = true;
         fallTimer = 0f;
-        activePieceSpawnTime = Time.time;
-
         return true;
     }
 
@@ -220,7 +210,6 @@ public class TetrisBoardController : MonoBehaviour
         ClearActiveVisuals();
         hasActivePiece = false;
         fallTimer = 0f;
-        ResetActivePieceTelemetry();
     }
 
     public void ResetBoardForNewRun()
@@ -232,32 +221,6 @@ public class TetrisBoardController : MonoBehaviour
         RaiseBoardChanged();
     }
 
-    public TetrisBoardMetrics CaptureMetrics()
-    {
-        // lightweight board features for training logs
-        int[] columnHeights = GetColumnHeights();
-        int maxHeight = 0;
-        int holes = 0;
-        int bumpiness = 0;
-        int deepestWell = 0;
-
-        for (int x = 0; x < width; x++)
-        {
-            maxHeight = Mathf.Max(maxHeight, columnHeights[x]);
-            holes += CountColumnHoles(x);
-
-            if (x > 0)
-                bumpiness += Mathf.Abs(columnHeights[x] - columnHeights[x - 1]);
-
-            deepestWell = Mathf.Max(deepestWell, GetColumnWellDepth(x, columnHeights));
-        }
-
-        float boardHeightRatio = height > 0 ? (float)maxHeight / height : 0f;
-        float holesRatio = width > 0 && height > 0 ? (float)holes / (width * height) : 0f;
-
-        return new TetrisBoardMetrics(boardHeightRatio, holesRatio, bumpiness, deepestWell);
-    }
-
     private void HandleMovePressed(Vector2Int direction)
     {
         if (!IsBoardActive || !hasActivePiece)
@@ -265,11 +228,6 @@ public class TetrisBoardController : MonoBehaviour
 
         if (direction == Vector2Int.up && !allowMoveUpForDebug)
             return;
-
-        activePieceMoveInputs++;
-
-        if (direction == Vector2Int.down)
-            activePieceSoftDropInputs++;
 
         TryMove(direction);
     }
@@ -279,7 +237,6 @@ public class TetrisBoardController : MonoBehaviour
         if (!IsBoardActive || !hasActivePiece)
             return;
 
-        activePieceRotationInputs++;
         TryRotate(clockwise: true);
     }
 
@@ -288,7 +245,6 @@ public class TetrisBoardController : MonoBehaviour
         if (!IsBoardActive || !hasActivePiece)
             return;
 
-        activePieceRotationInputs++;
         TryRotate(clockwise: false);
     }
 
@@ -296,8 +252,6 @@ public class TetrisBoardController : MonoBehaviour
     {
         if (!IsBoardActive || !hasActivePiece)
             return;
-
-        activePieceUsedHardDrop = true;
 
         while (TryMove(Vector2Int.down))
         {
@@ -370,14 +324,6 @@ public class TetrisBoardController : MonoBehaviour
 
     private void LockActivePiece()
     {
-        // snapshot telemetry before line clears or follow-up spawns mutate active-piece state
-        TetrominoType placedType = activeType;
-        float timeToPlace = Mathf.Max(0f, Time.time - activePieceSpawnTime);
-        int moveInputCount = activePieceMoveInputs;
-        int softDropInputCount = activePieceSoftDropInputs;
-        int rotationInputCount = activePieceRotationInputs;
-        bool usedHardDrop = activePieceUsedHardDrop;
-
         foreach (Transform visual in activeVisuals)
         {
             Vector2Int cell = WorldToCell(visual.position);
@@ -404,18 +350,6 @@ public class TetrisBoardController : MonoBehaviour
         }
 
         RaiseBoardChanged();
-
-        // raised after line clears so training metrics match the settled board
-        PiecePlaced?.Invoke(new TetrisPiecePlacementInfo(
-            placedType,
-            timeToPlace,
-            usedHardDrop,
-            moveInputCount,
-            softDropInputCount,
-            rotationInputCount,
-            cleared));
-
-        ResetActivePieceTelemetry();
 
         if (IsTouchingTop())
         {
@@ -589,63 +523,6 @@ public class TetrisBoardController : MonoBehaviour
         }
 
         grid = new Transform[width, height];
-    }
-
-    private int[] GetColumnHeights()
-    {
-        int[] columnHeights = new int[width];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = height - 1; y >= 0; y--)
-            {
-                if (grid[x, y] == null)
-                    continue;
-
-                columnHeights[x] = y + 1;
-                break;
-            }
-        }
-
-        return columnHeights;
-    }
-
-    private int CountColumnHoles(int x)
-    {
-        bool hasBlockAbove = false;
-        int holes = 0;
-
-        for (int y = height - 1; y >= 0; y--)
-        {
-            if (grid[x, y] != null)
-            {
-                hasBlockAbove = true;
-                continue;
-            }
-
-            if (hasBlockAbove)
-                holes++;
-        }
-
-        return holes;
-    }
-
-    private int GetColumnWellDepth(int x, int[] columnHeights)
-    {
-        int leftHeight = x <= 0 ? height : columnHeights[x - 1];
-        int rightHeight = x >= width - 1 ? height : columnHeights[x + 1];
-
-        // a well is the vertical gap trapped between taller neighbors or board walls
-        return Mathf.Max(0, Mathf.Min(leftHeight, rightHeight) - columnHeights[x]);
-    }
-
-    private void ResetActivePieceTelemetry()
-    {
-        activePieceSpawnTime = Time.time;
-        activePieceMoveInputs = 0;
-        activePieceSoftDropInputs = 0;
-        activePieceRotationInputs = 0;
-        activePieceUsedHardDrop = false;
     }
 
     private void RaiseBoardChanged()

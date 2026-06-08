@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ public class IntermissionPanelView : MonoBehaviour
 
     private PanelMode currentMode = PanelMode.Shop;
     private RunStatsController currentStats;
+    private string shopPrompt;
 
     private void OnEnable()
     {
@@ -34,8 +36,29 @@ public class IntermissionPanelView : MonoBehaviour
     {
         currentMode = PanelMode.Shop;
         currentStats = stats;
+        shopPrompt = string.Empty;
         SetNextRoundButtonVisible(true);
         SetNextRoundButtonInteractable(canContinue);
+        Refresh();
+    }
+
+    public void ShowShop(RunStatsController stats, IReadOnlyList<string> options, bool canContinue)
+    {
+        currentMode = PanelMode.Shop;
+        currentStats = stats;
+        shopPrompt = FormatShopOptions(options);
+        SetNextRoundButtonVisible(true);
+        SetNextRoundButtonInteractable(canContinue);
+        Refresh();
+    }
+
+    public void ShowShopResult(RunStatsController stats, string result)
+    {
+        currentMode = PanelMode.Shop;
+        currentStats = stats;
+        shopPrompt = result;
+        SetNextRoundButtonVisible(true);
+        SetNextRoundButtonInteractable(true);
         Refresh();
     }
 
@@ -43,7 +66,9 @@ public class IntermissionPanelView : MonoBehaviour
     {
         currentMode = PanelMode.RunComplete;
         currentStats = stats;
-        SetNextRoundButtonVisible(false);
+        shopPrompt = string.Empty;
+        SetNextRoundButtonVisible(true);
+        SetNextRoundButtonInteractable(true);
         Refresh();
     }
 
@@ -51,7 +76,9 @@ public class IntermissionPanelView : MonoBehaviour
     {
         currentMode = PanelMode.GameOver;
         currentStats = stats;
-        SetNextRoundButtonVisible(false);
+        shopPrompt = string.Empty;
+        SetNextRoundButtonVisible(true);
+        SetNextRoundButtonInteractable(true);
         Refresh();
     }
 
@@ -75,13 +102,15 @@ public class IntermissionPanelView : MonoBehaviour
     private void Refresh()
     {
         if (nextRoundButtonText != null)
-            nextRoundButtonText.text = Loc.T("shop.next_round");
+            nextRoundButtonText.text = currentMode == PanelMode.GameOver || currentMode == PanelMode.RunComplete
+                ? "Restart"
+                : Loc.T("shop.next_round");
 
         switch (currentMode)
         {
             case PanelMode.Shop:
                 SetText(titleText, Loc.T("shop.placeholder.title"));
-                SetText(bodyText, FormatStats("shop.placeholder.body"));
+                SetText(bodyText, FormatShopBody());
                 break;
             case PanelMode.RunComplete:
                 SetText(titleText, Loc.T("run.complete"));
@@ -92,6 +121,46 @@ public class IntermissionPanelView : MonoBehaviour
                 SetText(bodyText, FormatStats("run.game_over.body"));
                 break;
         }
+    }
+
+    private string FormatShopBody()
+    {
+        string body = FormatShopStats();
+
+        if (string.IsNullOrWhiteSpace(shopPrompt))
+            return body;
+
+        return shopPrompt + "\n\n" + body;
+    }
+
+    private string FormatShopStats()
+    {
+        if (currentStats == null)
+            return string.Empty;
+
+        return string.Format(
+            "Score: {0}\nAttention: {1}\nLines: {2}\nComposure: {3}\nNoise: {4}",
+            currentStats.Score,
+            currentStats.Attention,
+            currentStats.TotalLinesCleared,
+            currentStats.Composure,
+            currentStats.Noise
+        );
+    }
+
+    private string FormatShopOptions(IReadOnlyList<string> options)
+    {
+        if (options == null || options.Count <= 0)
+            return "Press 4 or 0 to skip";
+
+        string text = "Choose one shop option\n";
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            text += $"{i + 1}: {options[i]}\n";
+        }
+
+        return text + "4/0: Skip";
     }
 
     private string FormatStats(string key)
