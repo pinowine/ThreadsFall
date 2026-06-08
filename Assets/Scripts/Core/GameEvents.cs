@@ -2,6 +2,9 @@ using System;
 
 public static class GameEvents
 {
+    // small broadcast hub for systems that only need to react to gameplay changes.
+    public static Action<RunGameState> OnRunStateChanged;
+    public static Action<RunStatsController> OnRunStatsChanged;
     public static Action<int> OnCoinsChanged;
     public static Action<int> OnRoundChanged;
     public static Action<BossId> OnBossChanged;
@@ -11,9 +14,22 @@ public static class GameEvents
     public static Action<float> OnNextPreviewHidden;
     public static Action OnShopOpened;
     public static Action OnPieceLocked;
+    public static Action OnRoundPiecesExhausted;
+    public static Action OnRunComplete;
+    public static Action OnGameOver;
     public static Action OnBoardChanged;
     public static Action<TrollEffectType> OnTrollEffectBlocked;
     public static Action OnTrollEffectsChanged;
+
+    public static void RunStateChanged(RunGameState state)
+    {
+        OnRunStateChanged?.Invoke(state);
+    }
+
+    public static void RunStatsChanged(RunStatsController stats)
+    {
+        OnRunStatsChanged?.Invoke(stats);
+    }
 
     public static void CoinsChanged(int coins)
     {
@@ -58,6 +74,21 @@ public static class GameEvents
     public static void PieceLocked()
     {
         OnPieceLocked?.Invoke();
+    }
+
+    public static void RoundPiecesExhausted()
+    {
+        OnRoundPiecesExhausted?.Invoke();
+    }
+
+    public static void RunComplete()
+    {
+        OnRunComplete?.Invoke();
+    }
+
+    public static void GameOver()
+    {
+        OnGameOver?.Invoke();
     }
 
     public static void BoardChanged()

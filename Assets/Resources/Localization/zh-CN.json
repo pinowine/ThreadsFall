@@ -29,6 +29,26 @@
       "value": "先用规则观察习惯，预留机器学习接口。"
     },
     {
+      "key": "boss.none.comment.round_start",
+      "value": "当前没有首领。"
+    },
+    {
+      "key": "boss.false_helper.comment.round_start",
+      "value": "放那里吧。我从来没以有用的方式错过。"
+    },
+    {
+      "key": "boss.spammer.comment.round_start",
+      "value": "第一。"
+    },
+    {
+      "key": "boss.algorithm.comment.round_start",
+      "value": "我研究了你的习惯。比预想中少。"
+    },
+    {
+      "key": "boss.effect.none",
+      "value": "效果：无"
+    },
+    {
       "key": "line.false_helper.round_start.001",
       "value": "放那里吧。我从来没有以有用的方式错过。"
     },
@@ -147,6 +167,90 @@
     {
       "key": "ui.shop.buy",
       "value": "购买"
+    },
+    {
+      "key": "shop.placeholder.title",
+      "value": "商店"
+    },
+    {
+      "key": "shop.placeholder.body",
+      "value": "注意力：{1}\n分数：{0}\n升级会在之后的开发中加入。"
+    },
+    {
+      "key": "shop.next_round",
+      "value": "下一回合"
+    },
+    {
+      "key": "hud.attention",
+      "value": "注意力：{0}"
+    },
+    {
+      "key": "hud.composure",
+      "value": "镇定：{0}"
+    },
+    {
+      "key": "hud.noise",
+      "value": "噪音：{0}"
+    },
+    {
+      "key": "hud.score",
+      "value": "分数：{0}"
+    },
+    {
+      "key": "hud.lines",
+      "value": "消行：{0}"
+    },
+    {
+      "key": "hud.round",
+      "value": "回合：{0}"
+    },
+    {
+      "key": "piece.type.i",
+      "value": "I\u578b"
+    },
+    {
+      "key": "piece.type.o",
+      "value": "O\u578b"
+    },
+    {
+      "key": "piece.type.t",
+      "value": "T\u578b"
+    },
+    {
+      "key": "piece.type.s",
+      "value": "S\u578b"
+    },
+    {
+      "key": "piece.type.z",
+      "value": "Z\u578b"
+    },
+    {
+      "key": "piece.type.j",
+      "value": "J\u578b"
+    },
+    {
+      "key": "piece.type.l",
+      "value": "L\u578b"
+    },
+    {
+      "key": "piece.type.unknown",
+      "value": "\u672a\u77e5"
+    },
+    {
+      "key": "run.complete",
+      "value": "通关"
+    },
+    {
+      "key": "run.complete.body",
+      "value": "分数：{0}\n注意力：{1}\n消行：{2}\n镇定：{3}\n噪音：{4}"
+    },
+    {
+      "key": "run.game_over",
+      "value": "游戏结束"
+    },
+    {
+      "key": "run.game_over.body",
+      "value": "分数：{0}\n注意力：{1}\n消行：{2}\n镇定：{3}\n噪音：{4}"
     }
   ]
 }

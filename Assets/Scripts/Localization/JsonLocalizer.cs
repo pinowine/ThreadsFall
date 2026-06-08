@@ -26,6 +26,7 @@ public sealed class JsonLocalizer : ITextLocalizer
         entries.Clear();
         Locale = locale;
 
+        // Locale JSON lives in Resources so builds can load it without editor-only lookup.
         TextAsset textAsset = Resources.Load<TextAsset>("Localization/" + locale);
         if (textAsset == null)
         {
@@ -62,6 +63,6 @@ public sealed class JsonLocalizer : ITextLocalizer
         }
 
         string value;
-        return entries.TryGetValue(key, out value) ? value : key;
+        return entries.TryGetValue(key, out value) ? value : "#" + key;
     }
 }

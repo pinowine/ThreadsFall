@@ -29,6 +29,26 @@
       "value": "Rule-based habit watching, with an ML hook reserved."
     },
     {
+      "key": "boss.none.comment.round_start",
+      "value": "No boss is active."
+    },
+    {
+      "key": "boss.false_helper.comment.round_start",
+      "value": "Put it there. I have never been wrong in a useful way."
+    },
+    {
+      "key": "boss.spammer.comment.round_start",
+      "value": "FIRST."
+    },
+    {
+      "key": "boss.algorithm.comment.round_start",
+      "value": "I studied your habits. There were fewer than expected."
+    },
+    {
+      "key": "boss.effect.none",
+      "value": "Effect: None"
+    },
+    {
       "key": "line.false_helper.round_start.001",
       "value": "Put it there. I have never been wrong in a useful way."
     },
@@ -147,6 +167,90 @@
     {
       "key": "ui.shop.buy",
       "value": "Buy"
+    },
+    {
+      "key": "shop.placeholder.title",
+      "value": "Shop"
+    },
+    {
+      "key": "shop.placeholder.body",
+      "value": "Attention: {1}\nScore: {0}\nUpgrades arrive in a later pass."
+    },
+    {
+      "key": "shop.next_round",
+      "value": "Next Round"
+    },
+    {
+      "key": "hud.attention",
+      "value": "Attention: {0}"
+    },
+    {
+      "key": "hud.composure",
+      "value": "Composure: {0}"
+    },
+    {
+      "key": "hud.noise",
+      "value": "Noise: {0}"
+    },
+    {
+      "key": "hud.score",
+      "value": "Score: {0}"
+    },
+    {
+      "key": "hud.lines",
+      "value": "Lines: {0}"
+    },
+    {
+      "key": "hud.round",
+      "value": "Round: {0}"
+    },
+    {
+      "key": "piece.type.i",
+      "value": "I-Type"
+    },
+    {
+      "key": "piece.type.o",
+      "value": "O-Type"
+    },
+    {
+      "key": "piece.type.t",
+      "value": "T-Type"
+    },
+    {
+      "key": "piece.type.s",
+      "value": "S-Type"
+    },
+    {
+      "key": "piece.type.z",
+      "value": "Z-Type"
+    },
+    {
+      "key": "piece.type.j",
+      "value": "J-Type"
+    },
+    {
+      "key": "piece.type.l",
+      "value": "L-Type"
+    },
+    {
+      "key": "piece.type.unknown",
+      "value": "Unknown"
+    },
+    {
+      "key": "run.complete",
+      "value": "Run Complete"
+    },
+    {
+      "key": "run.complete.body",
+      "value": "Score: {0}\nAttention: {1}\nLines: {2}\nComposure: {3}\nNoise: {4}"
+    },
+    {
+      "key": "run.game_over",
+      "value": "Game Over"
+    },
+    {
+      "key": "run.game_over.body",
+      "value": "Score: {0}\nAttention: {1}\nLines: {2}\nComposure: {3}\nNoise: {4}"
     }
   ]
 }

@@ -13,11 +13,12 @@ public enum TetrominoType
 
 public interface IPieceProvider
 {
-    TetrominoType GetNextPieceType();
+    bool TryGetNextPieceType(out TetrominoType type);
 }
 
 public static class TetrominoShape
 {
+    // Cells are relative to a simple pivot; the board controller owns the world position.
     public static Vector2Int[] GetCells(TetrominoType type)
     {
         switch (type)
@@ -92,6 +93,7 @@ public static class TetrominoShape
 
     public static Vector2Int RotateCell(Vector2Int cell, bool clockwise)
     {
+        // Basic rotation for now; wall kicks can layer on top later.
         if (clockwise)
             return new Vector2Int(cell.y, -cell.x);
 

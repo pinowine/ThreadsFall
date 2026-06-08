@@ -23,6 +23,7 @@ public static class Loc
         JsonLocalizer jsonLocalizer = new();
         if (!jsonLocalizer.Load(locale))
         {
+            // Fall back to English so missing demo translations fail softly.
             if (locale != "en")
             {
                 jsonLocalizer.Load("en");

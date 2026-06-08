@@ -8,6 +8,19 @@ public enum BossId
     Algorithm
 }
 
+public enum RunGameState
+{
+    RunStart,
+    RoundPreparation,
+    BossPresentation,
+    RoundActive,
+    RoundResolution,
+    IntermissionShop,
+    SpecialEvent,
+    RunComplete,
+    GameOver
+}
+
 public enum TrollStyle
 {
     Sarcasm,
@@ -73,16 +86,13 @@ public static class GameEnumParser
 
     public static string ToLocSegment(this BossId bossId)
     {
-        switch (bossId)
+        // keep localization keys stable
+        return bossId switch
         {
-            case BossId.FalseHelper:
-                return "false_helper";
-            case BossId.Spammer:
-                return "spammer";
-            case BossId.Algorithm:
-                return "algorithm";
-            default:
-                return "none";
-        }
+            BossId.FalseHelper => "false_helper",
+            BossId.Spammer => "spammer",
+            BossId.Algorithm => "algorithm",
+            _ => "none",
+        };
     }
 }

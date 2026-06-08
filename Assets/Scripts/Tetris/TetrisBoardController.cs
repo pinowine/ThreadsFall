@@ -19,9 +19,10 @@ public class TetrisBoardController : MonoBehaviour
     [SerializeField] private MonoBehaviour pieceProviderBehaviour;
 
     [Header("Gameplay")]
-    [SerializeField] private bool spawnOnStart = true;
+    [SerializeField] private bool spawnOnStart;
     [SerializeField] private bool autoSpawnAfterLock = true;
-    [SerializeField] private bool allowMoveUpForDebug = true;
+    [SerializeField] private bool allowMoveUpForDebug;
+    [SerializeField] private bool enableDebugPieceSpawn;
     [SerializeField] private bool replaceActivePieceOnDebugSpawn = true;
     [SerializeField] private float fallInterval = 0.8f;
 
@@ -34,8 +35,21 @@ public class TetrisBoardController : MonoBehaviour
     [SerializeField] private Color colorJ = Color.blue;
     [SerializeField] private Color colorL = new(1f, 0.55f, 0f);
 
+    public event Action PieceLocked;
+    public event Action<TetrisPiecePlacementInfo> PiecePlaced;
     public event Action<int> LinesCleared;
+    public event Action RoundPiecesExhausted;
     public event Action GameOver;
+    public event Action BoardChanged;
+
+    public bool IsBoardActive { get; private set; }
+    public bool HasActivePiece => hasActivePiece;
+    public int Width => width;
+    public int Height => height;
+    public float CellSize => cellSize;
+    // UI helpers read these world bounds without needing to know the grid math.
+    public Vector3 BoardWorldMin => transform.position + new Vector3(-0.5f * cellSize, -0.5f * cellSize, 0f);
+    public Vector3 BoardWorldMax => transform.position + new Vector3((width - 0.5f) * cellSize, (height - 0.5f) * cellSize, 0f);
 
     private Transform[,] grid;
     private IPieceProvider pieceProvider;
@@ -46,22 +60,29 @@ public class TetrisBoardController : MonoBehaviour
     private readonly List<Transform> activeVisuals = new();
 
     private float fallTimer;
+    private float activePieceSpawnTime;
+    private int activePieceMoveInputs;
+    private int activePieceSoftDropInputs;
+    private int activePieceRotationInputs;
+    private bool activePieceUsedHardDrop;
     private bool hasActivePiece;
+    private bool gameOverRaised;
+    private MaterialPropertyBlock blockPropertyBlock;
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
 
     private void Awake()
     {
         grid = new Transform[width, height];
-
         pieceProvider = pieceProviderBehaviour as IPieceProvider;
+        blockPropertyBlock = new MaterialPropertyBlock();
 
         if (pieceProvider == null)
-        {
             Debug.LogWarning("Piece provider is missing or does not implement IPieceProvider.");
-        }
 
         if (lockedBlockRoot == null)
         {
-            GameObject root = new GameObject("Locked Blocks");
+            GameObject root = new("Locked Blocks");
             root.transform.SetParent(transform);
             lockedBlockRoot = root.transform;
         }
@@ -106,7 +127,7 @@ public class TetrisBoardController : MonoBehaviour
 
     private void Update()
     {
-        if (!hasActivePiece)
+        if (!IsBoardActive || !hasActivePiece)
             return;
 
         fallTimer += Time.deltaTime;
@@ -118,12 +139,34 @@ public class TetrisBoardController : MonoBehaviour
         }
     }
 
+    public void SetBoardActive(bool active)
+    {
+        IsBoardActive = active;
+
+        if (!active)
+            fallTimer = 0f;
+    }
+
     public bool SpawnPieceFromProvider()
     {
+        return TrySpawnPieceFromProvider(out _);
+    }
+
+    public bool TrySpawnPieceFromProvider(out bool providerExhausted)
+    {
+        // Callers need to distinguish an empty round from a blocked spawn.
+        providerExhausted = false;
+
         if (pieceProvider == null)
             return false;
 
-        return SpawnPiece(pieceProvider.GetNextPieceType());
+        if (!pieceProvider.TryGetNextPieceType(out TetrominoType type))
+        {
+            providerExhausted = true;
+            return false;
+        }
+
+        return SpawnPiece(type);
     }
 
     public bool SpawnPiece(TetrominoType type)
@@ -131,14 +174,20 @@ public class TetrisBoardController : MonoBehaviour
         if (hasActivePiece)
             return false;
 
+        if (blockPrefab == null)
+        {
+            Debug.LogError("Block prefab is missing.");
+            return false;
+        }
+
         activeType = type;
         activeCells = TetrominoShape.GetCells(type);
         activePosition = new Vector2Int(width / 2, height - 2);
+        ResetActivePieceTelemetry();
 
         if (!IsValidPosition(activePosition, activeCells))
         {
-            Debug.Log("Game Over: cannot spawn piece.");
-            GameOver?.Invoke();
+            RaiseGameOver("Game Over: cannot spawn piece.");
             return false;
         }
 
@@ -147,12 +196,16 @@ public class TetrisBoardController : MonoBehaviour
 
         hasActivePiece = true;
         fallTimer = 0f;
+        activePieceSpawnTime = Time.time;
 
         return true;
     }
 
     public void ForceDebugSpawn()
     {
+        if (!IsBoardActive || !enableDebugPieceSpawn)
+            return;
+
         if (hasActivePiece && replaceActivePieceOnDebugSpawn)
         {
             ClearActiveVisuals();
@@ -162,31 +215,89 @@ public class TetrisBoardController : MonoBehaviour
         SpawnPieceFromProvider();
     }
 
+    public void CancelActivePieceForDebug()
+    {
+        ClearActiveVisuals();
+        hasActivePiece = false;
+        fallTimer = 0f;
+        ResetActivePieceTelemetry();
+    }
+
+    public void ResetBoardForNewRun()
+    {
+        CancelActivePieceForDebug();
+        ClearLockedBlocks();
+        gameOverRaised = false;
+        SetBoardActive(false);
+        RaiseBoardChanged();
+    }
+
+    public TetrisBoardMetrics CaptureMetrics()
+    {
+        // lightweight board features for training logs
+        int[] columnHeights = GetColumnHeights();
+        int maxHeight = 0;
+        int holes = 0;
+        int bumpiness = 0;
+        int deepestWell = 0;
+
+        for (int x = 0; x < width; x++)
+        {
+            maxHeight = Mathf.Max(maxHeight, columnHeights[x]);
+            holes += CountColumnHoles(x);
+
+            if (x > 0)
+                bumpiness += Mathf.Abs(columnHeights[x] - columnHeights[x - 1]);
+
+            deepestWell = Mathf.Max(deepestWell, GetColumnWellDepth(x, columnHeights));
+        }
+
+        float boardHeightRatio = height > 0 ? (float)maxHeight / height : 0f;
+        float holesRatio = width > 0 && height > 0 ? (float)holes / (width * height) : 0f;
+
+        return new TetrisBoardMetrics(boardHeightRatio, holesRatio, bumpiness, deepestWell);
+    }
+
     private void HandleMovePressed(Vector2Int direction)
     {
-        if (!hasActivePiece)
+        if (!IsBoardActive || !hasActivePiece)
             return;
 
         if (direction == Vector2Int.up && !allowMoveUpForDebug)
             return;
+
+        activePieceMoveInputs++;
+
+        if (direction == Vector2Int.down)
+            activePieceSoftDropInputs++;
 
         TryMove(direction);
     }
 
     private void HandleRotateClockwise()
     {
+        if (!IsBoardActive || !hasActivePiece)
+            return;
+
+        activePieceRotationInputs++;
         TryRotate(clockwise: true);
     }
 
     private void HandleRotateCounterClockwise()
     {
+        if (!IsBoardActive || !hasActivePiece)
+            return;
+
+        activePieceRotationInputs++;
         TryRotate(clockwise: false);
     }
 
     private void HandleHardDrop()
     {
-        if (!hasActivePiece)
+        if (!IsBoardActive || !hasActivePiece)
             return;
+
+        activePieceUsedHardDrop = true;
 
         while (TryMove(Vector2Int.down))
         {
@@ -221,10 +332,7 @@ public class TetrisBoardController : MonoBehaviour
 
     private void TryRotate(bool clockwise)
     {
-        if (!hasActivePiece)
-            return;
-
-        if (!TetrominoShape.CanRotate(activeType))
+        if (!hasActivePiece || !TetrominoShape.CanRotate(activeType))
             return;
 
         Vector2Int[] rotated = new Vector2Int[activeCells.Length];
@@ -262,6 +370,14 @@ public class TetrisBoardController : MonoBehaviour
 
     private void LockActivePiece()
     {
+        // snapshot telemetry before line clears or follow-up spawns mutate active-piece state
+        TetrominoType placedType = activeType;
+        float timeToPlace = Mathf.Max(0f, Time.time - activePieceSpawnTime);
+        int moveInputCount = activePieceMoveInputs;
+        int softDropInputCount = activePieceSoftDropInputs;
+        int rotationInputCount = activePieceRotationInputs;
+        bool usedHardDrop = activePieceUsedHardDrop;
+
         foreach (Transform visual in activeVisuals)
         {
             Vector2Int cell = WorldToCell(visual.position);
@@ -276,20 +392,48 @@ public class TetrisBoardController : MonoBehaviour
         activeVisuals.Clear();
         hasActivePiece = false;
 
+        PieceLocked?.Invoke();
+        GameEvents.PieceLocked();
+
         int cleared = ClearFullLines();
 
         if (cleared > 0)
+        {
             LinesCleared?.Invoke(cleared);
+            GameEvents.LineCleared(cleared);
+        }
+
+        RaiseBoardChanged();
+
+        // raised after line clears so training metrics match the settled board
+        PiecePlaced?.Invoke(new TetrisPiecePlacementInfo(
+            placedType,
+            timeToPlace,
+            usedHardDrop,
+            moveInputCount,
+            softDropInputCount,
+            rotationInputCount,
+            cleared));
+
+        ResetActivePieceTelemetry();
 
         if (IsTouchingTop())
         {
-            Debug.Log("Game Over: blocks touched the top.");
-            GameOver?.Invoke();
+            RaiseGameOver("Game Over: blocks touched the top.");
             return;
         }
 
-        if (autoSpawnAfterLock)
-            SpawnPieceFromProvider();
+        if (!autoSpawnAfterLock)
+            return;
+
+        bool spawned = TrySpawnPieceFromProvider(out bool providerExhausted);
+
+        if (!spawned && providerExhausted)
+        {
+            SetBoardActive(false);
+            RoundPiecesExhausted?.Invoke();
+            GameEvents.RoundPiecesExhausted();
+        }
     }
 
     private int ClearFullLines()
@@ -304,7 +448,7 @@ public class TetrisBoardController : MonoBehaviour
             ClearLine(y);
             ShiftRowsDown(y + 1);
             cleared++;
-
+            // re-check this y because the row above just shifted into it
             y--;
         }
 
@@ -329,11 +473,11 @@ public class TetrisBoardController : MonoBehaviour
     {
         for (int x = 0; x < width; x++)
         {
-            if (grid[x, y] != null)
-            {
-                Destroy(grid[x, y].gameObject);
-                grid[x, y] = null;
-            }
+            if (grid[x, y] == null)
+                continue;
+
+            DestroyObject(grid[x, y].gameObject);
+            grid[x, y] = null;
         }
     }
 
@@ -379,14 +523,30 @@ public class TetrisBoardController : MonoBehaviour
         {
             GameObject block = Instantiate(blockPrefab, activeBlockRoot);
             block.name = $"Active_{activeType}_{i}";
+            block.SetActive(true);
 
-            SpriteRenderer spriteRenderer = block.GetComponent<SpriteRenderer>();
+            SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
 
             if (spriteRenderer != null)
-                spriteRenderer.color = color;
+            {
+                ConfigureBlockRenderer(spriteRenderer, color);
+            }
 
             activeVisuals.Add(block.transform);
         }
+    }
+
+    private void ConfigureBlockRenderer(SpriteRenderer spriteRenderer, Color color)
+    {
+        spriteRenderer.color = color;
+        spriteRenderer.transform.localPosition = Vector3.zero;
+        spriteRenderer.gameObject.SetActive(true);
+
+        spriteRenderer.GetPropertyBlock(blockPropertyBlock);
+        // set both common shader color slots so Sprite and URP materials behave the same
+        blockPropertyBlock.SetColor(BaseColorId, color);
+        blockPropertyBlock.SetColor(ColorId, color);
+        spriteRenderer.SetPropertyBlock(blockPropertyBlock);
     }
 
     private void RefreshActiveVisuals()
@@ -403,10 +563,118 @@ public class TetrisBoardController : MonoBehaviour
         for (int i = activeVisuals.Count - 1; i >= 0; i--)
         {
             if (activeVisuals[i] != null)
-                Destroy(activeVisuals[i].gameObject);
+                DestroyObject(activeVisuals[i].gameObject);
         }
 
         activeVisuals.Clear();
+    }
+
+    private void ClearLockedBlocks()
+    {
+        List<GameObject> blocks = new();
+
+        // collect first so destruction does not mutate the hierarchy while we enumerate it
+        if (lockedBlockRoot != null)
+        {
+            foreach (Transform child in lockedBlockRoot)
+            {
+                blocks.Add(child.gameObject);
+            }
+        }
+
+        foreach (GameObject block in blocks)
+        {
+            if (block != null)
+                DestroyObject(block);
+        }
+
+        grid = new Transform[width, height];
+    }
+
+    private int[] GetColumnHeights()
+    {
+        int[] columnHeights = new int[width];
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = height - 1; y >= 0; y--)
+            {
+                if (grid[x, y] == null)
+                    continue;
+
+                columnHeights[x] = y + 1;
+                break;
+            }
+        }
+
+        return columnHeights;
+    }
+
+    private int CountColumnHoles(int x)
+    {
+        bool hasBlockAbove = false;
+        int holes = 0;
+
+        for (int y = height - 1; y >= 0; y--)
+        {
+            if (grid[x, y] != null)
+            {
+                hasBlockAbove = true;
+                continue;
+            }
+
+            if (hasBlockAbove)
+                holes++;
+        }
+
+        return holes;
+    }
+
+    private int GetColumnWellDepth(int x, int[] columnHeights)
+    {
+        int leftHeight = x <= 0 ? height : columnHeights[x - 1];
+        int rightHeight = x >= width - 1 ? height : columnHeights[x + 1];
+
+        // a well is the vertical gap trapped between taller neighbors or board walls
+        return Mathf.Max(0, Mathf.Min(leftHeight, rightHeight) - columnHeights[x]);
+    }
+
+    private void ResetActivePieceTelemetry()
+    {
+        activePieceSpawnTime = Time.time;
+        activePieceMoveInputs = 0;
+        activePieceSoftDropInputs = 0;
+        activePieceRotationInputs = 0;
+        activePieceUsedHardDrop = false;
+    }
+
+    private void RaiseBoardChanged()
+    {
+        BoardChanged?.Invoke();
+        GameEvents.BoardChanged();
+    }
+
+    private void RaiseGameOver(string message)
+    {
+        if (gameOverRaised)
+            return;
+
+        gameOverRaised = true;
+        Debug.Log(message);
+        SetBoardActive(false);
+        GameOver?.Invoke();
+        GameEvents.GameOver();
+    }
+
+    private void DestroyObject(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(target);
+        else
+            DestroyImmediate(target);
     }
 
     private Vector3 CellToWorld(Vector2Int cell)
@@ -416,6 +684,7 @@ public class TetrisBoardController : MonoBehaviour
 
     private Vector2Int WorldToCell(Vector3 worldPosition)
     {
+        // blocks sit on cell centers
         Vector3 local = worldPosition - transform.position;
 
         int x = Mathf.RoundToInt(local.x / cellSize);
@@ -426,24 +695,16 @@ public class TetrisBoardController : MonoBehaviour
 
     private Color GetColor(TetrominoType type)
     {
-        switch (type)
+        return type switch
         {
-            case TetrominoType.I:
-                return colorI;
-            case TetrominoType.O:
-                return colorO;
-            case TetrominoType.T:
-                return colorT;
-            case TetrominoType.S:
-                return colorS;
-            case TetrominoType.Z:
-                return colorZ;
-            case TetrominoType.J:
-                return colorJ;
-            case TetrominoType.L:
-                return colorL;
-            default:
-                return Color.white;
-        }
+            TetrominoType.I => colorI,
+            TetrominoType.O => colorO,
+            TetrominoType.T => colorT,
+            TetrominoType.S => colorS,
+            TetrominoType.Z => colorZ,
+            TetrominoType.J => colorJ,
+            TetrominoType.L => colorL,
+            _ => Color.white,
+        };
     }
 }
