@@ -17,6 +17,30 @@
       "value": "The Algorithm"
     },
     {
+      "key": "boss.fake_scientist.name",
+      "value": "The Fake Scientist"
+    },
+    {
+      "key": "boss.fanwar_idol.name",
+      "value": "Fanwar Idol"
+    },
+    {
+      "key": "boss.flamebait.name",
+      "value": "Flamebait"
+    },
+    {
+      "key": "boss.meme.name",
+      "value": "Meme Swarm"
+    },
+    {
+      "key": "boss.review_bomber.name",
+      "value": "Review Bomber"
+    },
+    {
+      "key": "boss.anonymous.name",
+      "value": "Anonymous"
+    },
+    {
       "key": "boss.false_helper.theme",
       "value": "Fake advice and misleading previews."
     },
@@ -45,8 +69,60 @@
       "value": "I studied your habits. There were fewer than expected."
     },
     {
+      "key": "boss.fake_scientist.comment.round_start",
+      "value": "My chart proves your board is wrong."
+    },
+    {
+      "key": "boss.fanwar_idol.comment.round_start",
+      "value": "Everyone who matters already picked a side."
+    },
+    {
+      "key": "boss.flamebait.comment.round_start",
+      "value": "Interesting placement. Terrible, but interesting."
+    },
+    {
+      "key": "boss.meme.comment.round_start",
+      "value": "A single bad idea can become a format."
+    },
+    {
+      "key": "boss.review_bomber.comment.round_start",
+      "value": "One star. Too many edges."
+    },
+    {
+      "key": "boss.anonymous.comment.round_start",
+      "value": "You can block a name, not a crowd."
+    },
+    {
       "key": "boss.effect.none",
       "value": "Effect: None"
+    },
+    {
+      "key": "boss.effect.algorithm",
+      "value": "Effect: +8 noise at round start, piece preview hidden"
+    },
+    {
+      "key": "boss.effect.anonymous",
+      "value": "Effect: piece preview is hidden this round"
+    },
+    {
+      "key": "boss.effect.fake_scientist",
+      "value": "Effect: the piece preview lies about some types"
+    },
+    {
+      "key": "boss.effect.meme",
+      "value": "Effect: the piece preview lies about some types"
+    },
+    {
+      "key": "boss.effect.fanwar_idol",
+      "value": "Effect: 2 garbage cells drop in at round start"
+    },
+    {
+      "key": "boss.effect.flamebait",
+      "value": "Effect: 25% chance of +3 noise when a piece locks"
+    },
+    {
+      "key": "boss.effect.review_bomber",
+      "value": "Effect: -3 composure on every line clear"
     },
     {
       "key": "line.false_helper.round_start.001",
@@ -181,8 +257,264 @@
       "value": "Next Round"
     },
     {
+      "key": "shop.restart",
+      "value": "Restart"
+    },
+    {
+      "key": "shop.stats",
+      "value": "Attention: {1}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "Buy"
+    },
+    {
+      "key": "shop.item.cost",
+      "value": "Cost: {0}"
+    },
+    {
+      "key": "shop.no_offers",
+      "value": "No shop offers available."
+    },
+    {
+      "key": "shop.legacy.choose",
+      "value": "Choose one shop option"
+    },
+    {
+      "key": "shop.legacy.skip",
+      "value": "4/0: Skip"
+    },
+    {
+      "key": "shop.slot.empty",
+      "value": "Empty shelf"
+    },
+    {
+      "key": "shop.slot.reserve.empty",
+      "value": "Reserve slot"
+    },
+    {
+      "key": "shop.reserve.label",
+      "value": "Reserved"
+    },
+    {
+      "key": "shop.purchase.success",
+      "value": "Bought {0}\n-{1} attention"
+    },
+    {
+      "key": "shop.purchase.not_enough_attention",
+      "value": "{0} needs {1} attention."
+    },
+    {
+      "key": "shop.purchase.cannot_buy",
+      "value": "Cannot buy"
+    },
+    {
+      "key": "shop.effect.remove_failed",
+      "value": "No active abnormal effect was removed."
+    },
+    {
+      "key": "shop.effect.value.max",
+      "value": "max"
+    },
+    {
+      "key": "boss.hidden.name",
+      "value": "Blocked Terms"
+    },
+    {
+      "key": "boss.hidden.comment",
+      "value": "The boss is still acting, but the intent is hidden."
+    },
+    {
+      "key": "boss.hidden.effect",
+      "value": "Effect: hidden"
+    },
+    {
+      "key": "shop.item.archived_screenshot.name",
+      "value": "Archived Screenshot"
+    },
+    {
+      "key": "shop.item.archived_screenshot.desc",
+      "value": "Other people's inventions stop counting once the receipt is visible."
+    },
+    {
+      "key": "shop.item.archived_screenshot.effect",
+      "value": "Next round, boss obstacle placement is blocked."
+    },
+    {
+      "key": "shop.item.text_wall.name",
+      "value": "Text Wall"
+    },
+    {
+      "key": "shop.item.text_wall.desc",
+      "value": "You patiently write a long post in the hope that reason still has a mailbox."
+    },
+    {
+      "key": "shop.item.text_wall.effect",
+      "value": "70% chance to remove one active abnormal effect."
+    },
+    {
+      "key": "shop.item.mute_word_engineering.name",
+      "value": "Mute Word Engineering"
+    },
+    {
+      "key": "shop.item.mute_word_engineering.desc",
+      "value": "You made a form so long that no unpleasant word can reach your eyes."
+    },
+    {
+      "key": "shop.item.mute_word_engineering.effect",
+      "value": "Boss behavior intent is hidden for this run."
+    },
+    {
+      "key": "shop.item.breathing_draft.name",
+      "value": "Breathing Draft"
+    },
+    {
+      "key": "shop.item.breathing_draft.desc",
+      "value": "A reply you write, reread, and wisely never send."
+    },
+    {
+      "key": "shop.item.breathing_draft.effect",
+      "value": "No special effect."
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.name",
+      "value": "Fifteen Minute Mute"
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.desc",
+      "value": "A small silence with aggressively reasonable boundaries."
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.effect",
+      "value": "Boss intent is hidden next round."
+    },
+    {
+      "key": "shop.item.fact_check_tag.name",
+      "value": "Fact Check Tag"
+    },
+    {
+      "key": "shop.item.fact_check_tag.desc",
+      "value": "A little label that makes fake certainty work harder."
+    },
+    {
+      "key": "shop.item.fact_check_tag.effect",
+      "value": "Next round, fake next preview is blocked."
+    },
+    {
+      "key": "shop.item.moderation_queue.name",
+      "value": "Moderation Queue"
+    },
+    {
+      "key": "shop.item.moderation_queue.desc",
+      "value": "You send the problem to a slower place where it has to wait its turn."
+    },
+    {
+      "key": "shop.item.moderation_queue.effect",
+      "value": "Removes one active abnormal effect if any exists."
+    },
+    {
+      "key": "shop.item.slow_reply.name",
+      "value": "Slow Reply"
+    },
+    {
+      "key": "shop.item.slow_reply.desc",
+      "value": "You answer later, which is almost like having a strategy."
+    },
+    {
+      "key": "shop.item.slow_reply.effect",
+      "value": "Next round, trust reduction is blocked."
+    },
+    {
+      "key": "shop.item.clear_cache.name",
+      "value": "Clear Cache"
+    },
+    {
+      "key": "shop.item.clear_cache.desc",
+      "value": "Some stale panic finally gets evicted."
+    },
+    {
+      "key": "shop.item.clear_cache.effect",
+      "value": "Next round, hidden preview is blocked."
+    },
+    {
+      "key": "shop.item.close_dms.name",
+      "value": "Close DMs"
+    },
+    {
+      "key": "shop.item.close_dms.desc",
+      "value": "No new conversations, no new disasters. For now."
+    },
+    {
+      "key": "shop.item.close_dms.effect",
+      "value": "Next round, noise increase is blocked."
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.name",
+      "value": "Anti-Empathy Filter"
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.desc",
+      "value": "You stop trying to make the thread feel understood."
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.effect",
+      "value": "Boss intent is hidden next round."
+    },
+    {
+      "key": "shop.item.call_for_sources.name",
+      "value": "Call for Sources"
+    },
+    {
+      "key": "shop.item.call_for_sources.desc",
+      "value": "A small demand for evidence, placed where certainty was standing."
+    },
+    {
+      "key": "shop.item.call_for_sources.effect",
+      "value": "Next round, fake next preview is blocked."
+    },
+    {
+      "key": "shop.item.laugh_reaction.name",
+      "value": "Laugh Reaction"
+    },
+    {
+      "key": "shop.item.laugh_reaction.desc",
+      "value": "You decline the bait by being slightly too amused."
+    },
+    {
+      "key": "shop.item.laugh_reaction.effect",
+      "value": "No special effect."
+    },
+    {
+      "key": "shop.item.push_back.name",
+      "value": "Push Back"
+    },
+    {
+      "key": "shop.item.push_back.desc",
+      "value": "You answer the pressure without letting it steer."
+    },
+    {
+      "key": "shop.item.push_back.effect",
+      "value": "50% chance to remove one active abnormal effect."
+    },
+    {
       "key": "hud.attention",
       "value": "Attention: {0}"
+    },
+    {
+      "key": "hud.status_title",
+      "value": "STATUS"
+    },
+    {
+      "key": "hud.attention.label",
+      "value": "Attention"
+    },
+    {
+      "key": "hud.composure.label",
+      "value": "Composure"
+    },
+    {
+      "key": "hud.noise.label",
+      "value": "Noise"
     },
     {
       "key": "hud.composure",
@@ -203,6 +535,14 @@
     {
       "key": "hud.round",
       "value": "Round: {0}"
+    },
+    {
+      "key": "hud.purchased_items",
+      "value": "Purchased"
+    },
+    {
+      "key": "hud.purchased_none",
+      "value": "None yet"
     },
     {
       "key": "piece.type.i",
@@ -235,6 +575,26 @@
     {
       "key": "piece.type.unknown",
       "value": "Unknown"
+    },
+    {
+      "key": "run.node.search.name",
+      "value": "Search Node"
+    },
+    {
+      "key": "run.node.search.comment",
+      "value": "The thread is quiet for a second. Make it count."
+    },
+    {
+      "key": "run.node.mini_boss.name",
+      "value": "Minor Boss"
+    },
+    {
+      "key": "run.node.final.name",
+      "value": "Final Boss"
+    },
+    {
+      "key": "shop.encounter.name",
+      "value": "Shop"
     },
     {
       "key": "run.complete",

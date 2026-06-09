@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 public class RoundFlowController : MonoBehaviour
 {
-    [Header("Rounds")]
+    [Header("Legacy Round Fallbacks")]
     [SerializeField] private List<RoundDefinition> rounds = new();
 
     [Header("Tetris")]
@@ -14,6 +15,8 @@ public class RoundFlowController : MonoBehaviour
 
     [Header("Run")]
     [SerializeField] private RunStatsController statsController;
+    [SerializeField] private RunEffectSystem effectController;
+    [SerializeField] private RunShopController shopController;
 
     [Header("UI")]
     [SerializeField] private RoundPiecePreviewView piecePreviewView;
@@ -22,59 +25,29 @@ public class RoundFlowController : MonoBehaviour
     [SerializeField] private IntermissionPanelView intermissionPanelView;
     [SerializeField] private RunStatsHudView statsHudView;
 
-    [Header("Debug")]
-    [SerializeField] private bool enableDebugHotkeys;
+    [Header("Boss Data")]
+    [SerializeField] private BossCatalog bossCatalog;
 
-    [Header("Round Randomization")]
-    [SerializeField] private bool randomizeRoundsEachRun = true;
-    [SerializeField] private bool shuffleRoundOrder = true;
-    [SerializeField] private bool randomizeRoundPieces = true;
-    [SerializeField] private bool randomizeBossesEachRun = true;
-    [SerializeField] private int minimumRandomPiecesPerRound = 5;
-    [SerializeField] private int maximumRandomPiecesPerRound = 10;
+    [Header("Debug")]
+    [SerializeField] private bool enableDebugHotkeys = true;
+
+    [Header("Run Route")]
+    [SerializeField] private int expectedNodeCount = 7;
+    [SerializeField] private int initialPieceCount = 10;
+    [SerializeField] private int pieceCountIncreasePerNode = 5;
+    [SerializeField] private List<int> miniBossExpectedNodes = new() { 3, 5 };
+    [SerializeField] private int miniBossJitter = 2;
+    // used only when boss catalog assets are missing
+    [SerializeField] private List<BossId> miniBossPool = new() { BossId.FalseHelper, BossId.Spammer };
+    [SerializeField] private List<BossId> finalBossPool = new() { BossId.Algorithm };
 
     [Header("Intermission Shop")]
     [SerializeField] private bool enableIntermissionShopOffers = true;
-    [SerializeField] private int shopOffersPerRound = 3;
-    [SerializeField] private List<ShopItemTemplate> shopItemTemplates = new()
-    {
-        new ShopItemTemplate("deep_breath_debt", "Deep Breath Debt", 1, 2),
-        new ShopItemTemplate("focus_tab", "Focus Tab", 2, 3),
-        new ShopItemTemplate("panic_buffer", "Panic Buffer", 3, 5),
-        new ShopItemTemplate("mercy_marker", "Mercy Marker", 1, 4),
-        new ShopItemTemplate("late_round_push", "Late Round Push", 2, 6)
-    };
 
     public event Action<RunGameState> StateChanged;
 
     public RunGameState CurrentState { get; private set; } = RunGameState.RunStart;
     public int CurrentRoundIndex => currentRoundIndex;
-
-    [Serializable]
-    public sealed class ShopItemTemplate
-    {
-        public string itemId;
-        public string displayName;
-        public int composureCost;
-        public int noiseIncrease;
-
-        public ShopItemTemplate()
-        {
-        }
-
-        public ShopItemTemplate(string itemId, string displayName, int composureCost, int noiseIncrease)
-        {
-            this.itemId = itemId;
-            this.displayName = displayName;
-            this.composureCost = composureCost;
-            this.noiseIncrease = noiseIncrease;
-        }
-
-        public string GetOptionText()
-        {
-            return $"{displayName}  -{composureCost} composure, +{noiseIncrease} noise";
-        }
-    }
 
     private static readonly TetrominoType[] AllTetrominoTypes =
     {
@@ -87,20 +60,17 @@ public class RoundFlowController : MonoBehaviour
         TetrominoType.L
     };
 
-    private static readonly BossId[] RandomBossIds =
-    {
-        BossId.FalseHelper,
-        BossId.Spammer,
-        BossId.Algorithm
-    };
-
-    private readonly List<RoundDefinition> runtimeRounds = new();
+    private readonly List<RuntimeRunNode> runtimeNodes = new();
     private readonly List<TetrominoType> reusablePieceBag = new();
-    private readonly List<ShopItemTemplate> currentShopOffers = new();
+    private readonly List<int> reusableMiniBossNodes = new();
+    private readonly HashSet<int> reusableNodeNumbers = new();
+    private readonly HashSet<BossId> reusableUsedBosses = new();
+    private readonly HashSet<string> reusableUsedBossKeys = new();
+    private readonly List<BossId> reusableBossCandidates = new();
+    private readonly List<BossDefinition> reusableBossDefinitionCandidates = new();
     private int currentRoundIndex = -1;
     private int currentRunSeed;
     private bool runEnded;
-    private bool awaitingShopDecision;
     private System.Random runRandom;
     // shop input opens after the panel switch finishes
     private bool acceptingShopInput;
@@ -138,15 +108,15 @@ public class RoundFlowController : MonoBehaviour
 
     private void Update()
     {
-        HandleShopDecisionInput();
-
-        if (!enableDebugHotkeys)
+        if (!enableDebugHotkeys && !Application.isEditor)
             return;
 
         Keyboard keyboard = Keyboard.current;
 
         if (keyboard == null)
             return;
+
+        HandleDeveloperShortcuts(keyboard);
 
         if (keyboard.rKey.wasPressedThisFrame)
             RestartFullRunForDebug();
@@ -161,16 +131,31 @@ public class RoundFlowController : MonoBehaviour
             return;
 
         runEnded = false;
-        awaitingShopDecision = false;
         acceptingShopInput = false;
         currentRoundIndex = -1;
-        PrepareRuntimeRounds();
+        PrepareRuntimeNodes();
 
         boardController.SetBoardActive(false);
         statsController.ResetRun();
+        effectController.Initialize(statsController, boardController, piecePreviewView);
+        effectController.ResetRun();
+        shopController.Initialize(statsController, effectController);
+        shopController.ResetRun();
 
         if (statsHudView != null)
+        {
             statsHudView.SetStatsController(statsController);
+            statsHudView.SetShopController(shopController);
+        }
+
+        if (bossPanelView != null)
+        {
+            bossPanelView.SetEffectController(effectController);
+            bossPanelView.BindRoute(runtimeNodes);
+        }
+
+        if (panelSwitcher != null && bossPanelView != null)
+            panelSwitcher.SetShutterTarget(bossPanelView.AvatarRect);
 
         EnterState(RunGameState.RunStart);
         StartNextRoundInternal();
@@ -187,13 +172,13 @@ public class RoundFlowController : MonoBehaviour
         if (CurrentState != RunGameState.IntermissionShop)
             return;
 
-        if (awaitingShopDecision)
-            return;
-
         if (!acceptingShopInput)
             return;
 
         acceptingShopInput = false;
+
+        if (bossPanelView != null)
+            bossPanelView.SetNextRoundButtonInteractable(false);
 
         if (intermissionPanelView != null)
             intermissionPanelView.SetNextRoundButtonInteractable(false);
@@ -201,7 +186,7 @@ public class RoundFlowController : MonoBehaviour
         StartNextRoundInternal();
     }
 
-    // kept for existing scene button bindings; new bindings should call RequestNextRoundFromShop
+    // kept for existing scene button bindings
     public void StartNextRound()
     {
         RequestNextRoundFromShop();
@@ -215,34 +200,42 @@ public class RoundFlowController : MonoBehaviour
         acceptingShopInput = false;
         currentRoundIndex++;
 
-        IReadOnlyList<RoundDefinition> activeRounds = GetActiveRounds();
+        IReadOnlyList<RuntimeRunNode> activeNodes = runtimeNodes;
 
-        if (currentRoundIndex >= activeRounds.Count)
+        if (currentRoundIndex >= activeNodes.Count)
         {
             EnterRunComplete();
             return;
         }
 
-        RoundDefinition round = activeRounds[currentRoundIndex];
-        EnterRoundPreparation(round);
+        RuntimeRunNode node = activeNodes[currentRoundIndex];
+        EnterRoundPreparation(node);
     }
 
-    private void EnterRoundPreparation(RoundDefinition round)
+    private void EnterRoundPreparation(RuntimeRunNode node)
     {
         EnterState(RunGameState.RoundPreparation);
 
-        IReadOnlyList<TetrominoType> roundPieces = round.pieces != null
-            ? round.pieces
+        IReadOnlyList<TetrominoType> nodePieces = node.Pieces != null
+            ? node.Pieces
             : Array.Empty<TetrominoType>();
 
-        statsController.SetCurrentRoundIndex(currentRoundIndex + 1);
-        pieceProvider.SetRoundPieces(roundPieces);
+        statsController.SetCurrentRoundIndex(node.NodeIndex);
+        statsController.ApplyRoundStartNoise();
+        effectController.BeginRound(node.NodeIndex);
+        // boss skills come online before the preview renders so hide and fake apply
+        effectController.RegisterBossEffects(node.BossDefinition);
+        effectController.Fire(EffectTrigger.RoundStart);
+        pieceProvider.SetRoundPieces(nodePieces);
 
         if (piecePreviewView != null)
-            piecePreviewView.ShowRoundPieces(roundPieces);
+            piecePreviewView.ShowRoundPieces(nodePieces);
 
         if (bossPanelView != null)
-            bossPanelView.ShowBoss(round.bossId);
+        {
+            bossPanelView.SetEffectController(effectController);
+            bossPanelView.ShowNode(node, currentRoundIndex, currentRoundIndex);
+        }
 
         if (intermissionPanelView != null)
         {
@@ -250,26 +243,31 @@ public class RoundFlowController : MonoBehaviour
             intermissionPanelView.SetNextRoundButtonInteractable(false);
         }
 
-        GameEvents.RoundChanged(currentRoundIndex + 1);
-        GameEvents.BossChanged(round.bossId);
+        GameEvents.RoundChanged(node.NodeIndex);
+        GameEvents.BossChanged(node.BossId);
 
         if (panelSwitcher != null)
             panelSwitcher.SwitchToBoss();
 
-        Debug.Log($"Round started: {round.roundId}, remaining pieces: {pieceProvider.RemainingCount}");
+        Debug.Log($"Node started: {node.NodeId}, pieces: {pieceProvider.RemainingCount}");
 
-        EnterBossPresentation(round);
+        EnterBossPresentation(node);
     }
 
-    private void EnterBossPresentation(RoundDefinition round)
+    private void EnterBossPresentation(RuntimeRunNode node)
     {
         EnterState(RunGameState.BossPresentation);
         // kept as a state hook for a future pause or animation
-        EnterRoundActive(round);
+        EnterRoundActive(node);
     }
 
-    private void EnterRoundActive(RoundDefinition round)
+    private void EnterRoundActive(RuntimeRunNode node)
     {
+        if (node is null)
+        {
+            throw new ArgumentNullException(nameof(node));
+        }
+
         EnterState(RunGameState.RoundActive);
         boardController.SetBoardActive(true);
 
@@ -293,8 +291,9 @@ public class RoundFlowController : MonoBehaviour
         boardController.SetBoardActive(false);
         acceptingShopInput = false;
         EnterState(RunGameState.RoundResolution);
+        effectController.Fire(EffectTrigger.RoundEnd);
 
-        bool completesRun = !playerLost && currentRoundIndex >= GetActiveRounds().Count - 1;
+        bool completesRun = !playerLost && currentRoundIndex >= runtimeNodes.Count - 1;
 
         ContinueAfterRoundResolution(playerLost, completesRun);
     }
@@ -302,10 +301,21 @@ public class RoundFlowController : MonoBehaviour
     private void EnterIntermissionShop()
     {
         acceptingShopInput = false;
-        awaitingShopDecision = false;
         EnterState(RunGameState.IntermissionShop);
 
-        PrepareShopDecision();
+        if (enableIntermissionShopOffers)
+            shopController.OpenShop(statsController.CurrentRoundIndex);
+
+        if (bossPanelView != null)
+        {
+            int completedCount = currentRoundIndex + 1;
+            int nextNodeIndex = Mathf.Clamp(completedCount, 0, runtimeNodes.Count - 1);
+            bossPanelView.ShowShop(statsController, enableIntermissionShopOffers ? shopController : null, false, RequestNextRoundFromShop, nextNodeIndex, completedCount);
+        }
+        else if (intermissionPanelView != null)
+        {
+            intermissionPanelView.ShowShop(statsController, enableIntermissionShopOffers ? shopController : null, false);
+        }
 
         if (panelSwitcher != null)
             panelSwitcher.SwitchToShop();
@@ -320,12 +330,13 @@ public class RoundFlowController : MonoBehaviour
     {
         runEnded = true;
         acceptingShopInput = false;
-        awaitingShopDecision = false;
 
         boardController.SetBoardActive(false);
         EnterState(RunGameState.RunComplete);
 
-        if (intermissionPanelView != null)
+        if (bossPanelView != null)
+            bossPanelView.ShowRunComplete(statsController, RequestNextRoundFromShop);
+        else if (intermissionPanelView != null)
             intermissionPanelView.ShowRunComplete(statsController);
 
         if (panelSwitcher != null)
@@ -342,14 +353,15 @@ public class RoundFlowController : MonoBehaviour
 
         runEnded = true;
         acceptingShopInput = false;
-        awaitingShopDecision = false;
 
         if (boardController != null)
             boardController.SetBoardActive(false);
 
         EnterState(RunGameState.GameOver);
 
-        if (intermissionPanelView != null)
+        if (bossPanelView != null)
+            bossPanelView.ShowGameOver(statsController, RequestNextRoundFromShop);
+        else if (intermissionPanelView != null)
             intermissionPanelView.ShowGameOver(statsController);
 
         if (panelSwitcher != null)
@@ -361,7 +373,10 @@ public class RoundFlowController : MonoBehaviour
     private void HandleLinesCleared(int linesCleared)
     {
         if (statsController != null)
-            statsController.ApplyLineClearReward(linesCleared);
+        {
+            int clearedBlocks = boardController != null ? linesCleared * boardController.Width : linesCleared * 10;
+            statsController.ApplyLineClearReward(linesCleared, clearedBlocks);
+        }
     }
 
     private void HandleRoundPiecesExhausted()
@@ -385,13 +400,18 @@ public class RoundFlowController : MonoBehaviour
 
     private void EnableShopInputIfReady()
     {
-        if (!awaitingShopDecision)
-            EnableShopInput();
+        EnableShopInput();
     }
 
     private void EnableShopInput()
     {
         acceptingShopInput = true;
+
+        if (bossPanelView != null)
+        {
+            bossPanelView.SetNextRoundButtonVisible(true);
+            bossPanelView.SetNextRoundButtonInteractable(true);
+        }
 
         if (intermissionPanelView != null)
         {
@@ -415,125 +435,6 @@ public class RoundFlowController : MonoBehaviour
         }
 
         EnterIntermissionShop();
-    }
-
-    public void SubmitShopDecision(int optionId)
-    {
-        if (!awaitingShopDecision || CurrentState != RunGameState.IntermissionShop)
-            return;
-
-        if (optionId == 0 || optionId == 4)
-        {
-            CompleteShopDecision("Shop skipped");
-            return;
-        }
-
-        int offerIndex = optionId - 1;
-
-        if (offerIndex < 0 || offerIndex >= currentShopOffers.Count)
-            return;
-
-        ShopItemTemplate item = currentShopOffers[offerIndex];
-        int composureCost = Mathf.Max(0, item.composureCost);
-
-        if (!statsController.TrySpendComposure(composureCost))
-        {
-            Debug.LogWarning($"Shop item needs {composureCost} composure: {item.displayName}");
-            return;
-        }
-
-        int noiseIncrease = Mathf.Max(0, item.noiseIncrease);
-        statsController.AdjustNoise(noiseIncrease);
-        CompleteShopDecision($"Bought {item.displayName}\n-{composureCost} composure, +{noiseIncrease} noise");
-    }
-
-    private void PrepareShopDecision()
-    {
-        currentShopOffers.Clear();
-
-        if (!enableIntermissionShopOffers)
-        {
-            if (intermissionPanelView != null)
-                intermissionPanelView.ShowShop(statsController, true);
-            return;
-        }
-
-        BuildShopOffers();
-        awaitingShopDecision = currentShopOffers.Count > 0;
-
-        if (intermissionPanelView != null)
-            intermissionPanelView.ShowShop(statsController, BuildShopOptionText(), !awaitingShopDecision);
-
-        if (!awaitingShopDecision)
-            Debug.Log("Shop has no offers. Continue to next round.");
-    }
-
-    private void BuildShopOffers()
-    {
-        List<ShopItemTemplate> pool = new();
-
-        for (int i = 0; i < shopItemTemplates.Count; i++)
-        {
-            ShopItemTemplate item = shopItemTemplates[i];
-
-            if (item == null || string.IsNullOrWhiteSpace(item.displayName))
-                continue;
-
-            pool.Add(item);
-        }
-
-        Shuffle(pool);
-
-        int offerCount = Mathf.Clamp(shopOffersPerRound, 1, 3);
-        offerCount = Mathf.Min(offerCount, pool.Count);
-
-        for (int i = 0; i < offerCount; i++)
-        {
-            currentShopOffers.Add(pool[i]);
-        }
-    }
-
-    private List<string> BuildShopOptionText()
-    {
-        List<string> optionText = new();
-
-        for (int i = 0; i < currentShopOffers.Count; i++)
-        {
-            optionText.Add(currentShopOffers[i].GetOptionText());
-        }
-
-        return optionText;
-    }
-
-    private void CompleteShopDecision(string result)
-    {
-        awaitingShopDecision = false;
-
-        if (intermissionPanelView != null)
-            intermissionPanelView.ShowShopResult(statsController, result);
-
-        EnableShopInput();
-        Debug.Log(result);
-    }
-
-    private void HandleShopDecisionInput()
-    {
-        if (!awaitingShopDecision || CurrentState != RunGameState.IntermissionShop)
-            return;
-
-        Keyboard keyboard = Keyboard.current;
-
-        if (keyboard == null)
-            return;
-
-        if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
-            SubmitShopDecision(1);
-        else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
-            SubmitShopDecision(2);
-        else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
-            SubmitShopDecision(3);
-        else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame || keyboard.digit0Key.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame)
-            SubmitShopDecision(4);
     }
 
     private void EnterState(RunGameState state)
@@ -569,75 +470,250 @@ public class RoundFlowController : MonoBehaviour
             RequestNextRoundFromShop();
     }
 
-    private void PrepareRuntimeRounds()
+    private void HandleDeveloperShortcuts(Keyboard keyboard)
+    {
+        if (WasPressed(keyboard.digit1Key, keyboard.numpad1Key))
+            OpenShopForDebug();
+
+        if (WasPressed(keyboard.digit2Key, keyboard.numpad2Key))
+            statsController?.AddAttention(100);
+
+        if (WasPressed(keyboard.digit3Key, keyboard.numpad3Key))
+            statsController?.ApplyNoiseDelta(10);
+
+        if (WasPressed(keyboard.digit4Key, keyboard.numpad4Key))
+            statsController?.ApplyNoiseDelta(-10);
+
+        if (WasPressed(keyboard.digit5Key, keyboard.numpad5Key))
+            statsController?.ApplyComposureDelta(10);
+
+        if (WasPressed(keyboard.digit6Key, keyboard.numpad6Key))
+            statsController?.ApplyComposureDelta(-10);
+
+        if (WasPressed(keyboard.digit7Key, keyboard.numpad7Key))
+            SkipCurrentRoundToShopForDebug();
+
+        if (WasPressed(keyboard.digit8Key, keyboard.numpad8Key))
+            RestartFullRunForDebug();
+
+        if (WasPressed(keyboard.digit9Key, keyboard.numpad9Key))
+            EnterGameOver();
+
+        if (WasPressed(keyboard.digit0Key, keyboard.numpad0Key))
+            FastForwardToNextBossForDebug();
+    }
+
+    private bool WasPressed(KeyControl primary, KeyControl alternate)
+    {
+        return primary != null && primary.wasPressedThisFrame
+            || alternate != null && alternate.wasPressedThisFrame;
+    }
+
+    private void OpenShopForDebug()
+    {
+        if (runEnded)
+            runEnded = false;
+
+        if (boardController != null)
+        {
+            boardController.CancelActivePieceForDebug();
+            boardController.SetBoardActive(false);
+        }
+
+        EnterIntermissionShop();
+    }
+
+    private void SkipCurrentRoundToShopForDebug()
+    {
+        OpenShopForDebug();
+    }
+
+    private void FastForwardToNextBossForDebug()
+    {
+        if (runtimeNodes.Count <= 0)
+            PrepareRuntimeNodes();
+
+        int searchStart = Mathf.Clamp(currentRoundIndex + 1, 0, Mathf.Max(0, runtimeNodes.Count - 1));
+        int targetIndex = -1;
+
+        for (int i = searchStart; i < runtimeNodes.Count; i++)
+        {
+            if (runtimeNodes[i].IsBossNode)
+            {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        if (targetIndex < 0)
+            return;
+
+        runEnded = false;
+        acceptingShopInput = false;
+        currentRoundIndex = targetIndex - 1;
+
+        if (boardController != null)
+            boardController.ResetBoardForNewRun();
+
+        StartNextRoundInternal();
+    }
+
+    private void PrepareRuntimeNodes()
     {
         currentRunSeed = Guid.NewGuid().GetHashCode();
         runRandom = new System.Random(currentRunSeed);
-        runtimeRounds.Clear();
+        runtimeNodes.Clear();
 
-        if (!randomizeRoundsEachRun)
+        int nodeCount = Mathf.Max(1, expectedNodeCount);
+        int finalNodeNumber = nodeCount;
+        reusableMiniBossNodes.Clear();
+        reusableMiniBossNodes.AddRange(SelectMiniBossNodeNumbers(finalNodeNumber));
+        reusableMiniBossNodes.Sort();
+
+        Dictionary<int, BossDefinition> miniBossesByNode = new();
+        reusableUsedBosses.Clear();
+        reusableUsedBossKeys.Clear();
+
+        for (int i = 0; i < reusableMiniBossNodes.Count; i++)
         {
-            Debug.Log($"Run seed: {currentRunSeed}");
-            return;
+            int nodeNumber = reusableMiniBossNodes[i];
+            miniBossesByNode[nodeNumber] = DrawBossDefinition(RunNodeType.MiniBoss, reusableUsedBossKeys, GetAuthoredBossFallback(nodeNumber - 1, BossId.FalseHelper));
         }
 
-        for (int i = 0; i < rounds.Count; i++)
+        BossDefinition finalBoss = DrawBossDefinition(RunNodeType.FinalBoss, null, GetAuthoredBossFallback(finalNodeNumber - 1, BossId.Algorithm));
+        BossId fallbackFinalBoss = finalBoss != null
+            ? finalBoss.bossId
+            : DrawBoss(finalBossPool, null, GetAuthoredBossFallback(finalNodeNumber - 1, BossId.Algorithm));
+
+        for (int nodeNumber = 1; nodeNumber <= nodeCount; nodeNumber++)
         {
-            runtimeRounds.Add(CreateRuntimeRound(rounds[i], i));
+            RunNodeType nodeType = GetNodeType(nodeNumber, finalNodeNumber, miniBossesByNode);
+            BossDefinition bossDefinition = GetNodeBossDefinition(nodeNumber, nodeType, finalBoss, miniBossesByNode);
+            BossId bossId = bossDefinition != null
+                ? bossDefinition.bossId
+                : GetNodeBoss(nodeNumber, nodeType, fallbackFinalBoss, miniBossesByNode);
+            int pieceCount = GetPieceCountForNode(nodeNumber);
+            string nodeId = $"node_{nodeNumber:00}_{nodeType.ToString().ToLowerInvariant()}_seed{currentRunSeed:X8}";
+
+            runtimeNodes.Add(new RuntimeRunNode(
+                nodeId,
+                nodeNumber,
+                nodeType,
+                bossId,
+                bossDefinition,
+                GetDisplayNameKey(nodeType, bossId, bossDefinition),
+                pieceCount,
+                CreateRandomPieceSequence(pieceCount)
+            ));
         }
 
-        if (shuffleRoundOrder)
-            Shuffle(runtimeRounds);
-
-        for (int i = 0; i < runtimeRounds.Count; i++)
-        {
-            string baseId = string.IsNullOrWhiteSpace(runtimeRounds[i].roundId)
-                ? FallbackRoundId(i)
-                : runtimeRounds[i].roundId;
-
-            runtimeRounds[i].roundId = $"{baseId}_seed{currentRunSeed:X8}_slot{i + 1:00}";
-        }
-
-        Debug.Log($"Run seed: {currentRunSeed}");
+        Debug.Log($"Run seed: {currentRunSeed}, nodes: {runtimeNodes.Count}");
     }
 
-    private IReadOnlyList<RoundDefinition> GetActiveRounds()
+    private IReadOnlyList<int> SelectMiniBossNodeNumbers(int finalNodeNumber)
     {
-        return randomizeRoundsEachRun ? runtimeRounds : rounds;
+        reusableNodeNumbers.Clear();
+
+        int maxMiniBossCount = Mathf.Clamp(miniBossExpectedNodes != null ? miniBossExpectedNodes.Count : 0, 0, Mathf.Max(0, finalNodeNumber - 1));
+
+        for (int i = 0; i < maxMiniBossCount; i++)
+        {
+            int expectedNode = Mathf.Max(1, miniBossExpectedNodes[i]);
+            int nodeNumber = PickMiniBossNodeNumber(expectedNode, finalNodeNumber);
+
+            if (nodeNumber > 0)
+                reusableNodeNumbers.Add(nodeNumber);
+        }
+
+        reusableMiniBossNodes.Clear();
+        reusableMiniBossNodes.AddRange(reusableNodeNumbers);
+        return reusableMiniBossNodes;
     }
 
-    private RoundDefinition CreateRuntimeRound(RoundDefinition source, int sourceIndex)
+    private int PickMiniBossNodeNumber(int expectedNode, int finalNodeNumber)
     {
-        RoundDefinition round = new()
+        int minNode = 1;
+        int maxNode = Mathf.Max(1, finalNodeNumber - 1);
+        int jitter = Mathf.Max(0, miniBossJitter);
+
+        for (int attempt = 0; attempt < 24; attempt++)
         {
-            roundId = source != null && !string.IsNullOrWhiteSpace(source.roundId)
-                ? source.roundId
-                : FallbackRoundId(sourceIndex),
-            displayNameKey = source != null ? source.displayNameKey : string.Empty,
-            bossId = randomizeBossesEachRun ? GetRandomBoss() : source != null ? source.bossId : BossId.None,
-            pieces = CreateRuntimePieces(source),
-            targetLines = source != null ? source.targetLines : 0,
-            targetScore = source != null ? source.targetScore : 0,
-            rewardAttention = source != null ? source.rewardAttention : 0
+            int candidate = Mathf.Clamp(expectedNode + NextInclusive(-jitter, jitter), minNode, maxNode);
+
+            if (!reusableNodeNumbers.Contains(candidate))
+                return candidate;
+        }
+
+        return FindNearestAvailableNode(expectedNode, minNode, maxNode);
+    }
+
+    private int FindNearestAvailableNode(int expectedNode, int minNode, int maxNode)
+    {
+        int clampedExpected = Mathf.Clamp(expectedNode, minNode, maxNode);
+
+        for (int offset = 0; offset <= maxNode - minNode; offset++)
+        {
+            int lower = clampedExpected - offset;
+            int upper = clampedExpected + offset;
+
+            if (lower >= minNode && !reusableNodeNumbers.Contains(lower))
+                return lower;
+
+            if (upper <= maxNode && !reusableNodeNumbers.Contains(upper))
+                return upper;
+        }
+
+        return -1;
+    }
+
+    private RunNodeType GetNodeType(int nodeNumber, int finalNodeNumber, Dictionary<int, BossDefinition> miniBossesByNode)
+    {
+        if (nodeNumber == finalNodeNumber)
+            return RunNodeType.FinalBoss;
+
+        return miniBossesByNode.ContainsKey(nodeNumber) ? RunNodeType.MiniBoss : RunNodeType.Normal;
+    }
+
+    private BossDefinition GetNodeBossDefinition(int nodeNumber, RunNodeType nodeType, BossDefinition finalBoss, Dictionary<int, BossDefinition> miniBossesByNode)
+    {
+        return nodeType switch
+        {
+            RunNodeType.FinalBoss => finalBoss,
+            RunNodeType.MiniBoss => miniBossesByNode.TryGetValue(nodeNumber, out BossDefinition bossDefinition) ? bossDefinition : null,
+            _ => null
         };
-
-        return round;
     }
 
-    private List<TetrominoType> CreateRuntimePieces(RoundDefinition source)
+    private BossId GetNodeBoss(int nodeNumber, RunNodeType nodeType, BossId finalBoss, Dictionary<int, BossDefinition> miniBossesByNode)
     {
-        if (!randomizeRoundPieces)
+        return nodeType switch
         {
-            return source != null && source.pieces != null
-                ? new List<TetrominoType>(source.pieces)
-                : new List<TetrominoType>();
-        }
+            RunNodeType.FinalBoss => finalBoss,
+            RunNodeType.MiniBoss => miniBossesByNode.TryGetValue(nodeNumber, out BossDefinition bossDefinition) && bossDefinition != null
+                ? bossDefinition.bossId
+                : DrawBoss(miniBossPool, reusableUsedBosses, GetAuthoredBossFallback(nodeNumber - 1, BossId.FalseHelper)),
+            _ => BossId.None
+        };
+    }
 
-        int minPieces = Mathf.Max(1, minimumRandomPiecesPerRound);
-        int maxPieces = Mathf.Max(minPieces, maximumRandomPiecesPerRound);
-        int pieceCount = NextInclusive(minPieces, maxPieces);
+    private int GetPieceCountForNode(int nodeNumber)
+    {
+        int count = initialPieceCount + Mathf.Max(0, nodeNumber - 1) * pieceCountIncreasePerNode;
+        return Mathf.Max(1, count);
+    }
 
-        return CreateRandomPieceSequence(pieceCount);
+    private string GetDisplayNameKey(RunNodeType nodeType, BossId bossId, BossDefinition bossDefinition)
+    {
+        if (bossDefinition != null && !string.IsNullOrWhiteSpace(bossDefinition.nameKey))
+            return bossDefinition.nameKey;
+
+        if (nodeType == RunNodeType.Normal)
+            return "run.node.search.name";
+
+        if (bossId != BossId.None)
+            return "boss." + bossId.ToLocSegment() + ".name";
+
+        return nodeType == RunNodeType.FinalBoss ? "run.node.final.name" : "run.node.mini_boss.name";
     }
 
     private List<TetrominoType> CreateRandomPieceSequence(int pieceCount)
@@ -659,9 +735,107 @@ public class RoundFlowController : MonoBehaviour
         return pieces;
     }
 
-    private BossId GetRandomBoss()
+    private BossId DrawBoss(IReadOnlyList<BossId> pool, HashSet<BossId> usedBosses, BossId fallback)
     {
-        return RandomBossIds[NextInclusive(0, RandomBossIds.Length - 1)];
+        reusableBossCandidates.Clear();
+
+        if (pool != null)
+        {
+            for (int i = 0; i < pool.Count; i++)
+            {
+                BossId bossId = pool[i];
+
+                if (bossId == BossId.None)
+                    continue;
+
+                if (usedBosses == null || !usedBosses.Contains(bossId))
+                    reusableBossCandidates.Add(bossId);
+            }
+
+            if (reusableBossCandidates.Count <= 0)
+            {
+                for (int i = 0; i < pool.Count; i++)
+                {
+                    if (pool[i] != BossId.None)
+                        reusableBossCandidates.Add(pool[i]);
+                }
+            }
+        }
+
+        BossId chosen = reusableBossCandidates.Count > 0
+            ? reusableBossCandidates[NextInclusive(0, reusableBossCandidates.Count - 1)]
+            : fallback;
+
+        if (usedBosses != null && chosen != BossId.None)
+            usedBosses.Add(chosen);
+
+        return chosen;
+    }
+
+    private BossDefinition DrawBossDefinition(RunNodeType nodeType, HashSet<string> usedBossKeys, BossId fallback)
+    {
+        BossCatalog activeCatalog = ResolveBossCatalog();
+
+        if (activeCatalog == null)
+            return null;
+
+        activeCatalog.AppendAvailableBosses(reusableBossDefinitionCandidates, nodeType, usedBossKeys);
+
+        if (reusableBossDefinitionCandidates.Count <= 0 && usedBossKeys != null)
+            activeCatalog.AppendAvailableBosses(reusableBossDefinitionCandidates, nodeType, null);
+
+        if (reusableBossDefinitionCandidates.Count <= 0)
+            return activeCatalog.FindById(fallback);
+
+        float totalWeight = 0f;
+
+        for (int i = 0; i < reusableBossDefinitionCandidates.Count; i++)
+        {
+            totalWeight += Mathf.Max(0f, reusableBossDefinitionCandidates[i].routeWeight);
+        }
+
+        if (totalWeight <= 0f)
+            return reusableBossDefinitionCandidates[0];
+
+        float roll = (float)(runRandom.NextDouble() * totalWeight);
+        float cumulative = 0f;
+
+        for (int i = 0; i < reusableBossDefinitionCandidates.Count; i++)
+        {
+            BossDefinition boss = reusableBossDefinitionCandidates[i];
+            cumulative += Mathf.Max(0f, boss.routeWeight);
+
+            if (roll <= cumulative)
+            {
+                if (usedBossKeys != null)
+                    usedBossKeys.Add(boss.bossKey);
+
+                return boss;
+            }
+        }
+
+        BossDefinition fallbackBoss = reusableBossDefinitionCandidates[reusableBossDefinitionCandidates.Count - 1];
+
+        if (usedBossKeys != null)
+            usedBossKeys.Add(fallbackBoss.bossKey);
+
+        return fallbackBoss;
+    }
+
+    private BossCatalog ResolveBossCatalog()
+    {
+        if (bossCatalog == null)
+            bossCatalog = BossCatalog.ResolveDefault();
+
+        return bossCatalog;
+    }
+
+    private BossId GetAuthoredBossFallback(int sourceIndex, BossId fallback)
+    {
+        if (rounds == null || sourceIndex < 0 || sourceIndex >= rounds.Count || rounds[sourceIndex] == null)
+            return fallback;
+
+        return rounds[sourceIndex].bossId != BossId.None ? rounds[sourceIndex].bossId : fallback;
     }
 
     private int NextInclusive(int minInclusive, int maxInclusive)
@@ -681,13 +855,10 @@ public class RoundFlowController : MonoBehaviour
         }
     }
 
-    private static string FallbackRoundId(int index)
-    {
-        return "round_" + (index + 1).ToString("00");
-    }
-
     private bool ValidateRequiredReferences()
     {
+        EnsureRunServices();
+
         if (boardController == null)
         {
             Debug.LogError("RoundFlowController requires a TetrisBoardController.");
@@ -710,5 +881,23 @@ public class RoundFlowController : MonoBehaviour
             Debug.LogWarning("RunStatsHudView is not bound. HUD stats will not update.");
 
         return true;
+    }
+
+    private void EnsureRunServices()
+    {
+        if (effectController == null)
+            effectController = GetComponent<RunEffectSystem>();
+
+        if (effectController == null)
+            effectController = gameObject.AddComponent<RunEffectSystem>();
+
+        if (shopController == null)
+            shopController = GetComponent<RunShopController>();
+
+        if (shopController == null)
+            shopController = gameObject.AddComponent<RunShopController>();
+
+        if (bossPanelView != null)
+            bossPanelView.SetEffectController(effectController);
     }
 }

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12abdc2bcda58c4daca3020f18da3e7, type: 3}
+  m_Name: BossFlamebait
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteSequenceDefinition
+  sequenceId: boss_flamebait
+  framesPerSecond: 7
+  loop: 1
+  frames:
+  - {fileID: -2579708646905854006, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: -7026608387440631181, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: -2269632742278002738, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: -2396190219624831026, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: 4287945490196197366, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: -4207979785749108148, guid: b47366e9819cfcd469160b53de933c62, type: 3}
+  - {fileID: 2045265930383526509, guid: b47366e9819cfcd469160b53de933c62, type: 3}

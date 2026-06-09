@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: ArchivedScreenshot
+  m_EditorClassIdentifier: 
+  itemId: archived_screenshot
+  icon: {fileID: 8555343323591987779, guid: 60a0362c03f0a6444bc5313cf2c258af, type: 3}
+  nameKey: shop.item.archived_screenshot.name
+  descriptionKey: shop.item.archived_screenshot.desc
+  effectSummaryKey: shop.item.archived_screenshot.effect
+  baseAttentionCost: 70
+  composureDelta: 0
+  noiseDelta: -10
+  setComposureToMax: 0
+  setNoiseToZero: 0
+  uniquePerRun: 0
+  minRound: 0
+  shelfWeight: 1
+  effects:
+  - kind: 1
+    trollEffectType: 2
+    chance: 1

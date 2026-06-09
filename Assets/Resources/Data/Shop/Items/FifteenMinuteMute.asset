@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: FifteenMinuteMute
+  m_EditorClassIdentifier: 
+  itemId: fifteen_minute_mute
+  icon: {fileID: 5095902293174239699, guid: da8a72da4edd1724daaeaabd05a50f76, type: 3}
+  nameKey: shop.item.fifteen_minute_mute.name
+  descriptionKey: shop.item.fifteen_minute_mute.desc
+  effectSummaryKey: shop.item.fifteen_minute_mute.effect
+  baseAttentionCost: 80
+  composureDelta: 0
+  noiseDelta: -25
+  setComposureToMax: 0
+  setNoiseToZero: 0
+  uniquePerRun: 0
+  minRound: 0
+  shelfWeight: 1
+  effects:
+  - kind: 4
+    trollEffectType: 0
+    chance: 1

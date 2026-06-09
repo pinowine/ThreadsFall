@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12abdc2bcda58c4daca3020f18da3e7, type: 3}
+  m_Name: Composure
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteSequenceDefinition
+  sequenceId: composure
+  framesPerSecond: 8
+  loop: 1
+  frames:
+  - {fileID: -8912507493106870093, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: 6316373867580885909, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: -8263637898032970165, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: -5612683291677755533, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: 9078879680770893849, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: -994804199176301593, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: -334979949011719964, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: -5363606108387579348, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}
+  - {fileID: 1981733635826193725, guid: a1a5572d06b9376419fa68d7f4d2f1fa, type: 3}

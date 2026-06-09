@@ -17,6 +17,30 @@
       "value": "算法"
     },
     {
+      "key": "boss.fake_scientist.name",
+      "value": "伪科学家"
+    },
+    {
+      "key": "boss.fanwar_idol.name",
+      "value": "饭圈偶像"
+    },
+    {
+      "key": "boss.flamebait.name",
+      "value": "引战者"
+    },
+    {
+      "key": "boss.meme.name",
+      "value": "梗图群"
+    },
+    {
+      "key": "boss.review_bomber.name",
+      "value": "差评轰炸者"
+    },
+    {
+      "key": "boss.anonymous.name",
+      "value": "匿名者"
+    },
+    {
       "key": "boss.false_helper.theme",
       "value": "虚假建议和误导预览。"
     },
@@ -45,8 +69,60 @@
       "value": "我研究了你的习惯。比预想中少。"
     },
     {
+      "key": "boss.fake_scientist.comment.round_start",
+      "value": "我的图表证明你的棋盘是错的。"
+    },
+    {
+      "key": "boss.fanwar_idol.comment.round_start",
+      "value": "重要的人早就选边站了。"
+    },
+    {
+      "key": "boss.flamebait.comment.round_start",
+      "value": "有趣的摆法。糟糕，但有趣。"
+    },
+    {
+      "key": "boss.meme.comment.round_start",
+      "value": "一个坏主意也能变成模板。"
+    },
+    {
+      "key": "boss.review_bomber.comment.round_start",
+      "value": "一星。边太多。"
+    },
+    {
+      "key": "boss.anonymous.comment.round_start",
+      "value": "你能屏蔽名字，不能屏蔽人群。"
+    },
+    {
       "key": "boss.effect.none",
       "value": "效果：无"
+    },
+    {
+      "key": "boss.effect.algorithm",
+      "value": "效果：回合开始时噪声+8，方块预览被隐藏"
+    },
+    {
+      "key": "boss.effect.anonymous",
+      "value": "效果：本回合方块预览被隐藏"
+    },
+    {
+      "key": "boss.effect.fake_scientist",
+      "value": "效果：方块预览会谎报部分方块类型"
+    },
+    {
+      "key": "boss.effect.meme",
+      "value": "效果：方块预览会谎报部分方块类型"
+    },
+    {
+      "key": "boss.effect.fanwar_idol",
+      "value": "效果：回合开始时掉入2格垃圾方块"
+    },
+    {
+      "key": "boss.effect.flamebait",
+      "value": "效果：方块锁定时有25%概率噪声+3"
+    },
+    {
+      "key": "boss.effect.review_bomber",
+      "value": "效果：每次消行镇定-3"
     },
     {
       "key": "line.false_helper.round_start.001",
@@ -181,8 +257,264 @@
       "value": "下一回合"
     },
     {
+      "key": "shop.restart",
+      "value": "重新开始"
+    },
+    {
+      "key": "shop.stats",
+      "value": "关注度：{1}"
+    },
+    {
+      "key": "shop.buy",
+      "value": "购买"
+    },
+    {
+      "key": "shop.item.cost",
+      "value": "花费：{0}"
+    },
+    {
+      "key": "shop.no_offers",
+      "value": "当前没有可用商品。"
+    },
+    {
+      "key": "shop.legacy.choose",
+      "value": "选择一个商店选项"
+    },
+    {
+      "key": "shop.legacy.skip",
+      "value": "4/0：跳过"
+    },
+    {
+      "key": "shop.slot.empty",
+      "value": "空货架"
+    },
+    {
+      "key": "shop.slot.reserve.empty",
+      "value": "保留槽"
+    },
+    {
+      "key": "shop.reserve.label",
+      "value": "保留"
+    },
+    {
+      "key": "shop.purchase.success",
+      "value": "已购买 {0}\n-{1} 关注度"
+    },
+    {
+      "key": "shop.purchase.not_enough_attention",
+      "value": "{0} 需要 {1} 关注度。"
+    },
+    {
+      "key": "shop.purchase.cannot_buy",
+      "value": "无法购买"
+    },
+    {
+      "key": "shop.effect.remove_failed",
+      "value": "没有移除任何当前异常效果。"
+    },
+    {
+      "key": "shop.effect.value.max",
+      "value": "满"
+    },
+    {
+      "key": "boss.hidden.name",
+      "value": "屏蔽词"
+    },
+    {
+      "key": "boss.hidden.comment",
+      "value": "Boss 仍在行动，但它的意图已经被隐藏。"
+    },
+    {
+      "key": "boss.hidden.effect",
+      "value": "效果：已隐藏"
+    },
+    {
+      "key": "shop.item.archived_screenshot.name",
+      "value": "留档截图"
+    },
+    {
+      "key": "shop.item.archived_screenshot.desc",
+      "value": "别人的编造不再有效，至少这次你有收据。"
+    },
+    {
+      "key": "shop.item.archived_screenshot.effect",
+      "value": "下一轮中，Boss 放置阻碍物的能力不再生效。"
+    },
+    {
+      "key": "shop.item.text_wall.name",
+      "value": "文字墙"
+    },
+    {
+      "key": "shop.item.text_wall.desc",
+      "value": "你耐心撰写长文，试图证明道理仍然有收件箱。"
+    },
+    {
+      "key": "shop.item.text_wall.effect",
+      "value": "70% 概率移除一个当前异常效果。"
+    },
+    {
+      "key": "shop.item.mute_word_engineering.name",
+      "value": "屏蔽词工程"
+    },
+    {
+      "key": "shop.item.mute_word_engineering.desc",
+      "value": "你制作了一个超长表单，现在没有什么讨厌的单词能被你看见。"
+    },
+    {
+      "key": "shop.item.mute_word_engineering.effect",
+      "value": "本局内隐藏 Boss 行为与意图。"
+    },
+    {
+      "key": "shop.item.breathing_draft.name",
+      "value": "深呼吸草稿"
+    },
+    {
+      "key": "shop.item.breathing_draft.desc",
+      "value": "你写下回复，读了一遍，然后明智地没有发送。"
+    },
+    {
+      "key": "shop.item.breathing_draft.effect",
+      "value": "没有特殊效果。"
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.name",
+      "value": "静音十五分钟"
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.desc",
+      "value": "一小段安静，边界感强得令人安心。"
+    },
+    {
+      "key": "shop.item.fifteen_minute_mute.effect",
+      "value": "下一轮隐藏 Boss 意图。"
+    },
+    {
+      "key": "shop.item.fact_check_tag.name",
+      "value": "事实核查标签"
+    },
+    {
+      "key": "shop.item.fact_check_tag.desc",
+      "value": "一个小标签，让虚假的确定性多费点力气。"
+    },
+    {
+      "key": "shop.item.fact_check_tag.effect",
+      "value": "下一轮阻止假预览。"
+    },
+    {
+      "key": "shop.item.moderation_queue.name",
+      "value": "版务队列"
+    },
+    {
+      "key": "shop.item.moderation_queue.desc",
+      "value": "你把问题送到一个更慢的地方，让它排队。"
+    },
+    {
+      "key": "shop.item.moderation_queue.effect",
+      "value": "若存在异常效果，则移除一个。"
+    },
+    {
+      "key": "shop.item.slow_reply.name",
+      "value": "慢速回复"
+    },
+    {
+      "key": "shop.item.slow_reply.desc",
+      "value": "你晚点再回，这几乎已经像一种策略。"
+    },
+    {
+      "key": "shop.item.slow_reply.effect",
+      "value": "下一轮阻止信任降低。"
+    },
+    {
+      "key": "shop.item.clear_cache.name",
+      "value": "清理缓存"
+    },
+    {
+      "key": "shop.item.clear_cache.desc",
+      "value": "一些过期的恐慌终于被清掉了。"
+    },
+    {
+      "key": "shop.item.clear_cache.effect",
+      "value": "下一轮阻止预览隐藏。"
+    },
+    {
+      "key": "shop.item.close_dms.name",
+      "value": "关闭私信"
+    },
+    {
+      "key": "shop.item.close_dms.desc",
+      "value": "没有新对话，也就暂时没有新灾难。"
+    },
+    {
+      "key": "shop.item.close_dms.effect",
+      "value": "下一轮阻止噪声增加。"
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.name",
+      "value": "反共情滤镜"
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.desc",
+      "value": "你停止试图让整条讨论感到被理解。"
+    },
+    {
+      "key": "shop.item.anti_empathy_filter.effect",
+      "value": "下一轮隐藏 Boss 意图。"
+    },
+    {
+      "key": "shop.item.call_for_sources.name",
+      "value": "索要来源"
+    },
+    {
+      "key": "shop.item.call_for_sources.desc",
+      "value": "你在确定性站着的位置放下一点证据要求。"
+    },
+    {
+      "key": "shop.item.call_for_sources.effect",
+      "value": "下一轮阻止假预览。"
+    },
+    {
+      "key": "shop.item.laugh_reaction.name",
+      "value": "笑一下"
+    },
+    {
+      "key": "shop.item.laugh_reaction.desc",
+      "value": "你用稍微过分的好笑拒绝了诱饵。"
+    },
+    {
+      "key": "shop.item.laugh_reaction.effect",
+      "value": "没有特殊效果。"
+    },
+    {
+      "key": "shop.item.push_back.name",
+      "value": "顶回去"
+    },
+    {
+      "key": "shop.item.push_back.desc",
+      "value": "你回应压力，但不让它掌舵。"
+    },
+    {
+      "key": "shop.item.push_back.effect",
+      "value": "50% 概率移除一个当前异常效果。"
+    },
+    {
       "key": "hud.attention",
       "value": "注意力：{0}"
+    },
+    {
+      "key": "hud.status_title",
+      "value": "状态"
+    },
+    {
+      "key": "hud.attention.label",
+      "value": "关注度"
+    },
+    {
+      "key": "hud.composure.label",
+      "value": "镇定"
+    },
+    {
+      "key": "hud.noise.label",
+      "value": "噪声"
     },
     {
       "key": "hud.composure",
@@ -205,36 +537,64 @@
       "value": "回合：{0}"
     },
     {
+      "key": "hud.purchased_items",
+      "value": "已购商品"
+    },
+    {
+      "key": "hud.purchased_none",
+      "value": "暂无"
+    },
+    {
       "key": "piece.type.i",
-      "value": "I\u578b"
+      "value": "I型"
     },
     {
       "key": "piece.type.o",
-      "value": "O\u578b"
+      "value": "O型"
     },
     {
       "key": "piece.type.t",
-      "value": "T\u578b"
+      "value": "T型"
     },
     {
       "key": "piece.type.s",
-      "value": "S\u578b"
+      "value": "S型"
     },
     {
       "key": "piece.type.z",
-      "value": "Z\u578b"
+      "value": "Z型"
     },
     {
       "key": "piece.type.j",
-      "value": "J\u578b"
+      "value": "J型"
     },
     {
       "key": "piece.type.l",
-      "value": "L\u578b"
+      "value": "L型"
     },
     {
       "key": "piece.type.unknown",
-      "value": "\u672a\u77e5"
+      "value": "未知"
+    },
+    {
+      "key": "run.node.search.name",
+      "value": "搜索节点"
+    },
+    {
+      "key": "run.node.search.comment",
+      "value": "串流暂时安静。把这一段打好。"
+    },
+    {
+      "key": "run.node.mini_boss.name",
+      "value": "小Boss"
+    },
+    {
+      "key": "run.node.final.name",
+      "value": "最终Boss"
+    },
+    {
+      "key": "shop.encounter.name",
+      "value": "Shop"
     },
     {
       "key": "run.complete",

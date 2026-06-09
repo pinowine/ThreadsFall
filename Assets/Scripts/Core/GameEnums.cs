@@ -5,7 +5,13 @@ public enum BossId
     None,
     FalseHelper,
     Spammer,
-    Algorithm
+    Algorithm,
+    FakeScientist,
+    FanWarIdol,
+    Flamebait,
+    Meme,
+    ReviewBomber,
+    Anonymous
 }
 
 public enum RunGameState
@@ -19,6 +25,21 @@ public enum RunGameState
     SpecialEvent,
     RunComplete,
     GameOver
+}
+
+public enum RunNodeType
+{
+    Normal,
+    MiniBoss,
+    FinalBoss
+}
+
+public enum NoiseTier
+{
+    Low,
+    Elevated,
+    High,
+    Critical
 }
 
 public enum TrollStyle
@@ -63,14 +84,6 @@ public enum PlayerState
     Misled
 }
 
-public enum UpgradeEffectKind
-{
-    None,
-    LineClearCoinBonus,
-    MultiLineCoinBonus,
-    BlockFakeNextPreview
-}
-
 public static class GameEnumParser
 {
     public static T Parse<T>(string value, T fallback) where T : struct
@@ -92,6 +105,12 @@ public static class GameEnumParser
             BossId.FalseHelper => "false_helper",
             BossId.Spammer => "spammer",
             BossId.Algorithm => "algorithm",
+            BossId.FakeScientist => "fake_scientist",
+            BossId.FanWarIdol => "fanwar_idol",
+            BossId.Flamebait => "flamebait",
+            BossId.Meme => "meme",
+            BossId.ReviewBomber => "review_bomber",
+            BossId.Anonymous => "anonymous",
             _ => "none",
         };
     }

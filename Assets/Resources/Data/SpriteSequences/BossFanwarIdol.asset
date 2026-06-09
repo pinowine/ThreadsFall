@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12abdc2bcda58c4daca3020f18da3e7, type: 3}
+  m_Name: BossFanwarIdol
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteSequenceDefinition
+  sequenceId: boss_fanwar_idol
+  framesPerSecond: 7
+  loop: 1
+  frames:
+  - {fileID: 9048923323078555762, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: -8378395016075101062, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 7139532536461029911, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 2275051795252279281, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: -5523696013931750429, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 3505522621903571756, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: -3286434702567446747, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 8269049402516590607, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 6164514601291603055, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 7372649673555724643, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 2275252526164431032, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 4990211955991816430, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: -7786382563411279581, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: -6175318055914429522, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}
+  - {fileID: 8553756026433764777, guid: be0c0f4cab37ec449a7081fba212f420, type: 3}

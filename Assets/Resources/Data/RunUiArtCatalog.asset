@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd901ef16a9c7e040a62a680e7bdf0a9, type: 3}
+  m_Name: RunUiArtCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::RunUiArtCatalog
+  attentionIcon: {fileID: 11400000, guid: 9c70300717f300f41b9003fffd681aaa, type: 2}
+  composureIcon: {fileID: 11400000, guid: 1da58d49727609c408c6566049287d2a, type: 2}
+  noiseIcon: {fileID: 11400000, guid: 7836ddee93fd8f7449a3306c74f59af6, type: 2}
+  lockIcon: {fileID: 11400000, guid: b965a062ca84e4a4b84366c8c0b6223c, type: 2}
+  shopkeeperAvatar: {fileID: 11400000, guid: 8763e24f6b93fd0478d8cd442cbde4c1, type: 2}
+  searchNodeIcon: {fileID: 11400000, guid: 301f06089c0070b4597052f1dcccb93f, type: 2}
+  miniBossNodeIcon: {fileID: 11400000, guid: 98e2ff6d870e36749a789325fd5859ae, type: 2}
+  finalBossNodeIcon: {fileID: 11400000, guid: a56abbb49858d894dacc89a3e95b522f, type: 2}
+  leftPanelBackground: {fileID: -7666135629055648374, guid: a90d08dde8999994fad7a9e53369ef50, type: 3}

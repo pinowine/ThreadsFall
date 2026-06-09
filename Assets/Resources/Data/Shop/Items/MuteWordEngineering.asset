@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: MuteWordEngineering
+  m_EditorClassIdentifier: 
+  itemId: mute_word_engineering
+  icon: {fileID: 3946618019405194445, guid: cfc27c926c54ddd459910adc54fffc21, type: 3}
+  nameKey: shop.item.mute_word_engineering.name
+  descriptionKey: shop.item.mute_word_engineering.desc
+  effectSummaryKey: shop.item.mute_word_engineering.effect
+  baseAttentionCost: 0
+  composureDelta: 0
+  noiseDelta: 0
+  setComposureToMax: 1
+  setNoiseToZero: 1
+  uniquePerRun: 1
+  minRound: 0
+  shelfWeight: 0.25
+  effects:
+  - kind: 3
+    trollEffectType: 0
+    chance: 1

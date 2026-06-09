@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12abdc2bcda58c4daca3020f18da3e7, type: 3}
+  m_Name: BossReviewBomber
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteSequenceDefinition
+  sequenceId: boss_review_bomber
+  framesPerSecond: 7
+  loop: 1
+  frames:
+  - {fileID: -2776827022418397794, guid: 446a897e091b9834babcd895db63cfe1, type: 3}
+  - {fileID: 26804306106967003, guid: 446a897e091b9834babcd895db63cfe1, type: 3}
+  - {fileID: -2318094004623680886, guid: 446a897e091b9834babcd895db63cfe1, type: 3}
+  - {fileID: 9174087193713679732, guid: 446a897e091b9834babcd895db63cfe1, type: 3}
+  - {fileID: -98948422001142612, guid: 446a897e091b9834babcd895db63cfe1, type: 3}
+  - {fileID: -3830460996225184140, guid: 446a897e091b9834babcd895db63cfe1, type: 3}

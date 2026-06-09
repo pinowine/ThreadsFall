@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: LaughReaction
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemDefinition
+  itemId: laugh_reaction
+  icon: {fileID: -2713201877625984612, guid: 9cdf9639932785b4fb615d84a0f59081, type: 3}
+  nameKey: shop.item.laugh_reaction.name
+  descriptionKey: shop.item.laugh_reaction.desc
+  effectSummaryKey: shop.item.laugh_reaction.effect
+  baseAttentionCost: 35
+  composureDelta: 8
+  noiseDelta: 8
+  setComposureToMax: 0
+  setNoiseToZero: 0
+  uniquePerRun: 0
+  minRound: 0
+  shelfWeight: 0.8
+  effects: []

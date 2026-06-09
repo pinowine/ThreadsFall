@@ -7,10 +7,12 @@ public class TetrisBoardController : MonoBehaviour
     [Header("Board")]
     [SerializeField] private int width = 10;
     [SerializeField] private int height = 20;
-    [SerializeField] private float cellSize = 1f;
+    [SerializeField] private float cellSize = 0.8f;
     [SerializeField] private Transform lockedBlockRoot;
     [SerializeField] private Transform activeBlockRoot;
+    [SerializeField] private Transform borderBlockRoot;
     [SerializeField] private GameObject blockPrefab;
+    [SerializeField] private bool generateBorderBlocks = true;
 
     [Header("Input")]
     [SerializeField] private TetrisInputReader inputReader;
@@ -34,6 +36,8 @@ public class TetrisBoardController : MonoBehaviour
     [SerializeField] private Color colorZ = Color.red;
     [SerializeField] private Color colorJ = Color.blue;
     [SerializeField] private Color colorL = new(1f, 0.55f, 0f);
+    [SerializeField] private Color borderBlockColor = Color.white;
+    [SerializeField] private Color garbageBlockColor = new(0.45f, 0.45f, 0.45f, 1f);
 
     public event Action PieceLocked;
     public event Action<int> LinesCleared;
@@ -46,7 +50,6 @@ public class TetrisBoardController : MonoBehaviour
     public int Width => width;
     public int Height => height;
     public float CellSize => cellSize;
-    // UI helpers read these world bounds without needing to know the grid math.
     public Vector3 BoardWorldMin => transform.position + new Vector3(-0.5f * cellSize, -0.5f * cellSize, 0f);
     public Vector3 BoardWorldMax => transform.position + new Vector3((width - 0.5f) * cellSize, (height - 0.5f) * cellSize, 0f);
 
@@ -62,6 +65,7 @@ public class TetrisBoardController : MonoBehaviour
     private bool hasActivePiece;
     private bool gameOverRaised;
     private MaterialPropertyBlock blockPropertyBlock;
+    private static Sprite solidBorderSprite;
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
 
@@ -87,6 +91,15 @@ public class TetrisBoardController : MonoBehaviour
             root.transform.SetParent(transform);
             activeBlockRoot = root.transform;
         }
+
+        if (borderBlockRoot == null)
+        {
+            GameObject root = new("Border Blocks");
+            root.transform.SetParent(transform);
+            borderBlockRoot = root.transform;
+        }
+
+        RebuildBorderBlocks();
     }
 
     private void OnEnable()
@@ -219,6 +232,58 @@ public class TetrisBoardController : MonoBehaviour
         gameOverRaised = false;
         SetBoardActive(false);
         RaiseBoardChanged();
+    }
+
+    // boss effect hook, drops locked junk cells into the lowest open rows
+    public void AddGarbageCells(int count)
+    {
+        if (blockPrefab == null || grid == null || count <= 0)
+            return;
+
+        List<int> emptyColumns = new();
+        int remaining = count;
+
+        for (int y = 0; y < height && remaining > 0; y++)
+        {
+            emptyColumns.Clear();
+
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x, y] == null)
+                    emptyColumns.Add(x);
+            }
+
+            // always leave one gap so garbage can never complete a line by itself
+            int fillable = Mathf.Min(remaining, emptyColumns.Count - 1);
+
+            for (int i = 0; i < fillable; i++)
+            {
+                int pick = UnityEngine.Random.Range(0, emptyColumns.Count);
+                int column = emptyColumns[pick];
+                emptyColumns.RemoveAt(pick);
+                CreateGarbageBlock(new Vector2Int(column, y));
+                remaining--;
+            }
+        }
+
+        if (remaining < count)
+            RaiseBoardChanged();
+    }
+
+    private void CreateGarbageBlock(Vector2Int cell)
+    {
+        GameObject block = Instantiate(blockPrefab, lockedBlockRoot);
+        block.name = $"Garbage_{cell.x}_{cell.y}";
+        block.SetActive(true);
+        block.transform.localScale = GetBlockScale();
+        block.transform.position = CellToWorld(cell);
+
+        SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
+
+        if (spriteRenderer != null)
+            ConfigureBlockRenderer(spriteRenderer, garbageBlockColor);
+
+        grid[cell.x, cell.y] = block.transform;
     }
 
     private void HandleMovePressed(Vector2Int direction)
@@ -458,6 +523,7 @@ public class TetrisBoardController : MonoBehaviour
             GameObject block = Instantiate(blockPrefab, activeBlockRoot);
             block.name = $"Active_{activeType}_{i}";
             block.SetActive(true);
+            block.transform.localScale = GetBlockScale();
 
             SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
 
@@ -525,6 +591,78 @@ public class TetrisBoardController : MonoBehaviour
         grid = new Transform[width, height];
     }
 
+    private void RebuildBorderBlocks()
+    {
+        ClearBorderBlocks();
+
+        if (!generateBorderBlocks || blockPrefab == null || borderBlockRoot == null)
+            return;
+
+        // border blocks stay outside the grid so they never affect collision or line clears
+        for (int x = -1; x <= width; x++)
+        {
+            CreateBorderBlock(new Vector2Int(x, -1));
+            CreateBorderBlock(new Vector2Int(x, height));
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            CreateBorderBlock(new Vector2Int(-1, y));
+            CreateBorderBlock(new Vector2Int(width, y));
+        }
+    }
+
+    private void CreateBorderBlock(Vector2Int cell)
+    {
+        GameObject block = Instantiate(blockPrefab, borderBlockRoot);
+        block.name = $"Border_{cell.x}_{cell.y}";
+        block.SetActive(true);
+        block.transform.localScale = GetBlockScale();
+        block.transform.position = CellToWorld(cell);
+
+        SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
+
+        if (spriteRenderer != null)
+            ConfigureBorderRenderer(spriteRenderer);
+    }
+
+    private void ConfigureBorderRenderer(SpriteRenderer spriteRenderer)
+    {
+        spriteRenderer.sprite = ResolveSolidBorderSprite();
+        ConfigureBlockRenderer(spriteRenderer, borderBlockColor);
+    }
+
+    private Sprite ResolveSolidBorderSprite()
+    {
+        if (solidBorderSprite != null)
+            return solidBorderSprite;
+
+        Texture2D texture = Texture2D.whiteTexture;
+        Rect rect = new(0f, 0f, texture.width, texture.height);
+        // solid white keeps prefab texture shading from turning the frame gray
+        solidBorderSprite = Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), texture.width);
+        return solidBorderSprite;
+    }
+
+    private void ClearBorderBlocks()
+    {
+        if (borderBlockRoot == null)
+            return;
+
+        List<GameObject> blocks = new();
+
+        foreach (Transform child in borderBlockRoot)
+        {
+            blocks.Add(child.gameObject);
+        }
+
+        foreach (GameObject block in blocks)
+        {
+            if (block != null)
+                DestroyObject(block);
+        }
+    }
+
     private void RaiseBoardChanged()
     {
         BoardChanged?.Invoke();
@@ -557,6 +695,11 @@ public class TetrisBoardController : MonoBehaviour
     private Vector3 CellToWorld(Vector2Int cell)
     {
         return transform.position + new Vector3(cell.x * cellSize, cell.y * cellSize, 0f);
+    }
+
+    private Vector3 GetBlockScale()
+    {
+        return Vector3.one * Mathf.Max(0.05f, cellSize);
     }
 
     private Vector2Int WorldToCell(Vector3 worldPosition)

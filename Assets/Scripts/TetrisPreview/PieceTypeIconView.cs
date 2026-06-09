@@ -172,9 +172,8 @@ public class PieceTypeIconView : MonoBehaviour
         labelRect.anchoredPosition = Vector2.zero;
         labelRect.sizeDelta = Vector2.zero;
 
-        typeLabel.fontSize = labelFontSize;
+        UiTheme.Style(typeLabel, labelFontSize, FontStyles.Normal, UiTheme.TextInverse);
         typeLabel.alignment = TextAlignmentOptions.Center;
-        typeLabel.color = Color.white;
         typeLabel.textWrappingMode = TextWrappingModes.NoWrap;
         typeLabel.overflowMode = TextOverflowModes.Overflow;
     }

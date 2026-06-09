@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca6966d8a32673428d27f1357ebb5c5, type: 3}
+  m_Name: Anonymous
+  m_EditorClassIdentifier: Assembly-CSharp::BossDefinition
+  bossKey: anonymous
+  bossId: 9
+  nodeType: 2
+  nameKey: boss.anonymous.name
+  commentKey: boss.anonymous.comment.round_start
+  effectKey: boss.effect.anonymous
+  avatarSequence: {fileID: 11400000, guid: 811eaa12a7330fe45b8093265ba7cf38, type: 2}
+  routeWeight: 1
+  effects:
+  - trigger: 1
+    kind: 4
+    trollEffectType: 3
+    magnitude: 0
+    chance: 1
+    durationRounds: 0

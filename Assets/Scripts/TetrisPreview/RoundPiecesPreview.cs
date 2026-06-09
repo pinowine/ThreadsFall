@@ -14,7 +14,22 @@ public class RoundPiecePreviewView : MonoBehaviour
 
     private IPiecePreviewRevealPolicy revealPolicy;
     private readonly List<PieceTypeIconView> spawnedIcons = new();
+    private readonly List<TetrominoType> lastRoundPieces = new();
     private GridLayoutGroup gridLayout;
+    // effect system overrides, hidden blanks the panel and corrupted lies about types
+    private bool hiddenOverride;
+    private bool corruptedOverride;
+
+    private static readonly TetrominoType[] AllTypes =
+    {
+        TetrominoType.I,
+        TetrominoType.O,
+        TetrominoType.T,
+        TetrominoType.S,
+        TetrominoType.Z,
+        TetrominoType.J,
+        TetrominoType.L
+    };
 
     private void Awake()
     {
@@ -34,12 +49,58 @@ public class RoundPiecePreviewView : MonoBehaviour
 
     public void ShowRoundPieces(IReadOnlyList<TetrominoType> roundPieces)
     {
+        lastRoundPieces.Clear();
+
+        if (roundPieces != null)
+            lastRoundPieces.AddRange(roundPieces);
+
+        Render();
+    }
+
+    public void SetHiddenOverride(bool hidden)
+    {
+        if (hiddenOverride == hidden)
+            return;
+
+        hiddenOverride = hidden;
+
+        if (hidden)
+            GameEvents.NextPreviewHidden(0f);
+
+        RefreshFromCache();
+    }
+
+    public void SetCorruptedOverride(bool corrupted)
+    {
+        if (corruptedOverride == corrupted)
+            return;
+
+        corruptedOverride = corrupted;
+        RefreshFromCache();
+    }
+
+    private void RefreshFromCache()
+    {
+        if (lastRoundPieces.Count > 0)
+            Render();
+    }
+
+    private void Render()
+    {
         Clear();
 
         if (revealPolicy == null)
             return;
 
-        List<TetrominoType> visibleTypes = revealPolicy.GetVisiblePieceTypes(roundPieces);
+        // hidden wins, the player just gets an empty shelf this round
+        if (hiddenOverride)
+            return;
+
+        List<TetrominoType> visibleTypes = revealPolicy.GetVisiblePieceTypes(lastRoundPieces);
+
+        if (corruptedOverride)
+            CorruptVisibleTypes(visibleTypes);
+
         ConfigureGrid(visibleTypes.Count);
 
         foreach (var type in visibleTypes)
@@ -59,6 +120,37 @@ public class RoundPiecePreviewView : MonoBehaviour
         }
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(iconRoot);
+    }
+
+    private void CorruptVisibleTypes(List<TetrominoType> visibleTypes)
+    {
+        if (visibleTypes.Count <= 0)
+            return;
+
+        // a lie needs types the round does not actually contain
+        List<TetrominoType> absentTypes = new();
+
+        foreach (TetrominoType type in AllTypes)
+        {
+            if (!lastRoundPieces.Contains(type))
+                absentTypes.Add(type);
+        }
+
+        if (absentTypes.Count <= 0)
+            return;
+
+        int swaps = Mathf.Min(2, Mathf.Min(visibleTypes.Count, absentTypes.Count));
+
+        for (int i = 0; i < swaps; i++)
+        {
+            int targetIndex = Random.Range(0, visibleTypes.Count);
+            int absentIndex = Random.Range(0, absentTypes.Count);
+            visibleTypes[targetIndex] = absentTypes[absentIndex];
+            absentTypes.RemoveAt(absentIndex);
+        }
+
+        visibleTypes.Sort();
+        GameEvents.FakePreviewTriggered();
     }
 
     private void Clear()

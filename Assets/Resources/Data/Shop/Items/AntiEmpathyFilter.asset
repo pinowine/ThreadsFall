@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: AntiEmpathyFilter
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemDefinition
+  itemId: anti_empathy_filter
+  icon: {fileID: 2523428279156831347, guid: c30aac2c12c66a84b8c75ee498810d4b, type: 3}
+  nameKey: shop.item.anti_empathy_filter.name
+  descriptionKey: shop.item.anti_empathy_filter.desc
+  effectSummaryKey: shop.item.anti_empathy_filter.effect
+  baseAttentionCost: 60
+  composureDelta: -8
+  noiseDelta: -12
+  setComposureToMax: 0
+  setNoiseToZero: 0
+  uniquePerRun: 0
+  minRound: 1
+  shelfWeight: 0.8
+  effects:
+  - kind: 4
+    trollEffectType: 0
+    chance: 1

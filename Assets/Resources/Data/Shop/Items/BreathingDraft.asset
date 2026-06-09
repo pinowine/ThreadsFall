@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51f12d8a7e34524b3dbc147b5863753, type: 3}
+  m_Name: BreathingDraft
+  m_EditorClassIdentifier: 
+  itemId: breathing_draft
+  icon: {fileID: 4876574702857066112, guid: f7867243f96b86f4395a90f7a701b0a3, type: 3}
+  nameKey: shop.item.breathing_draft.name
+  descriptionKey: shop.item.breathing_draft.desc
+  effectSummaryKey: shop.item.breathing_draft.effect
+  baseAttentionCost: 45
+  composureDelta: 15
+  noiseDelta: 3
+  setComposureToMax: 0
+  setNoiseToZero: 0
+  uniquePerRun: 0
+  minRound: 0
+  shelfWeight: 1
+  effects: []

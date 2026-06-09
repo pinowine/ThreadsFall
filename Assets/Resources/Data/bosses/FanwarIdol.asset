@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca6966d8a32673428d27f1357ebb5c5, type: 3}
+  m_Name: FanwarIdol
+  m_EditorClassIdentifier: Assembly-CSharp::BossDefinition
+  bossKey: fanwar_idol
+  bossId: 5
+  nodeType: 1
+  nameKey: boss.fanwar_idol.name
+  commentKey: boss.fanwar_idol.comment.round_start
+  effectKey: boss.effect.fanwar_idol
+  avatarSequence: {fileID: 11400000, guid: e559dde22bc73634d9927959fef317ce, type: 2}
+  routeWeight: 1
+  effects:
+  - trigger: 1
+    kind: 6
+    trollEffectType: 2
+    magnitude: 2
+    chance: 1
+    durationRounds: 0
