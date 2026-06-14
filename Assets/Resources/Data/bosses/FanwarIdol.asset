@@ -20,6 +20,7 @@ MonoBehaviour:
   effectKey: boss.effect.fanwar_idol
   avatarSequence: {fileID: 11400000, guid: e559dde22bc73634d9927959fef317ce, type: 2}
   routeWeight: 1
+  basePressure: 72
   effects:
   - trigger: 1
     kind: 6
@@ -27,3 +28,18 @@ MonoBehaviour:
     magnitude: 2
     chance: 1
     durationRounds: 0
+    mood: 0
+  skills:
+  - trigger: 0
+    kind: 13
+    trollEffectType: 0
+    magnitude: 4
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 9
+  skillChance: 0.5
+  preferredPieces:
+  - 1
+  - 4
+  preferredPieceBias: 2.5

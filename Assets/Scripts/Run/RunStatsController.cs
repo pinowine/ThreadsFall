@@ -13,7 +13,7 @@ public class RunStatsController : MonoBehaviour
     [SerializeField] private int maxNoise = 100;
 
     [Header("Rewards")]
-    [SerializeField] private int attentionPerClearedBlock = 10;
+    [SerializeField] private int attentionPerClearedBlock = 4;
     [SerializeField] private int perfectClearComposureGain = 10;
     [SerializeField] private int mistakeComposureLoss = 10;
     [SerializeField] private int noiseGainPerRound = 5;
@@ -32,7 +32,8 @@ public class RunStatsController : MonoBehaviour
     public int MaxNoise => Mathf.Max(1, maxNoise);
     public bool IsCollapsed => Composure <= 0;
     public NoiseTier NoiseTier => GetNoiseTier(Noise);
-    public float AttentionCurrencyModifier => bonusAttentionCurrencyModifier + GetNoiseCurrencyModifier(NoiseTier);
+    // noise pays out continuously: +10% income at 50 noise, +20% at 100
+    public float AttentionCurrencyModifier => runAttentionPercentBonus + roundAttentionPercentBonus + Noise * NoiseAttentionBonusPerPoint;
     public float AttentionRewardMultiplier => attentionRewardMultiplier;
     // these query points let other systems react without owning stat math
     public bool CanPreviewPieces => !IsCollapsed;
@@ -46,7 +47,11 @@ public class RunStatsController : MonoBehaviour
     public bool ShouldDistortUiText => NoiseTier >= NoiseTier.High;
     public bool ShouldBlockUiInteraction => IsCollapsed || NoiseTier == NoiseTier.Critical;
 
-    private float bonusAttentionCurrencyModifier;
+    private const float NoiseAttentionBonusPerPoint = 0.002f;
+
+    // run bonus comes from purchased perks, round bonus from the active boss aura
+    private float runAttentionPercentBonus;
+    private float roundAttentionPercentBonus;
     private float attentionRewardMultiplier = 1f;
     private bool hasMistakeSinceLastClear;
 
@@ -66,7 +71,8 @@ public class RunStatsController : MonoBehaviour
         Score = initialScore;
         TotalLinesCleared = 0;
         CurrentRoundIndex = 0;
-        bonusAttentionCurrencyModifier = 0f;
+        runAttentionPercentBonus = 0f;
+        roundAttentionPercentBonus = 0f;
         attentionRewardMultiplier = 1f;
         hasMistakeSinceLastClear = false;
 
@@ -162,9 +168,24 @@ public class RunStatsController : MonoBehaviour
         ApplyNoiseDelta(noiseAmount);
     }
 
-    public void SetAttentionCurrencyModifier(float modifier)
+    public void AddRunAttentionPercent(int percent)
     {
-        bonusAttentionCurrencyModifier = Mathf.Max(-1f, modifier);
+        runAttentionPercentBonus = Mathf.Max(-1f, runAttentionPercentBonus + percent / 100f);
+        NotifyChanged();
+    }
+
+    public void AddRoundAttentionPercent(int percent)
+    {
+        roundAttentionPercentBonus = Mathf.Max(-1f, roundAttentionPercentBonus + percent / 100f);
+        NotifyChanged();
+    }
+
+    public void ResetRoundAttentionModifier()
+    {
+        if (Mathf.Approximately(roundAttentionPercentBonus, 0f))
+            return;
+
+        roundAttentionPercentBonus = 0f;
         NotifyChanged();
     }
 
@@ -284,17 +305,6 @@ public class RunStatsController : MonoBehaviour
             return NoiseTier.Elevated;
 
         return NoiseTier.Low;
-    }
-
-    private static float GetNoiseCurrencyModifier(NoiseTier tier)
-    {
-        return tier switch
-        {
-            NoiseTier.Elevated => 0.2f,
-            NoiseTier.High => 0.5f,
-            NoiseTier.Critical => 1f,
-            _ => 0f
-        };
     }
 
     private void NotifyChanged()

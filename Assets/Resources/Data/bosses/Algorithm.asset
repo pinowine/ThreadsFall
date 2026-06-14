@@ -20,16 +20,54 @@ MonoBehaviour:
   effectKey: boss.effect.algorithm
   avatarSequence: {fileID: 11400000, guid: f4e7795aab106144fbbf63bc7862988d, type: 2}
   routeWeight: 1
+  basePressure: 95
   effects:
   - trigger: 1
-    kind: 1
-    trollEffectType: 4
-    magnitude: 8
+    kind: 16
+    trollEffectType: 0
+    magnitude: -10
     chance: 1
     durationRounds: 0
+    mood: 0
   - trigger: 1
     kind: 4
     trollEffectType: 3
     magnitude: 0
     chance: 1
     durationRounds: 0
+    mood: 0
+  - trigger: 1
+    kind: 10
+    trollEffectType: 7
+    magnitude: 0
+    chance: 0.3
+    durationRounds: 0
+    mood: 0
+  - trigger: 1
+    kind: 12
+    trollEffectType: 6
+    magnitude: 35
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skills:
+  - trigger: 0
+    kind: 13
+    trollEffectType: 0
+    magnitude: 3
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  - trigger: 0
+    kind: 14
+    trollEffectType: 0
+    magnitude: 8
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 7
+  skillChance: 0.6
+  preferredPieces:
+  - 0
+  - 1
+  preferredPieceBias: 2.5

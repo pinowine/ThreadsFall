@@ -198,11 +198,11 @@ MonoBehaviour:
   statsHudView: {fileID: 1260378810}
   bossCatalog: {fileID: 0}
   enableDebugHotkeys: 1
-  expectedNodeCount: 7
+  openingSearchNodes: {x: 3, y: 4}
+  midSearchNodes: {x: 2, y: 3}
+  lateSearchNodes: {x: 1, y: 2}
   initialPieceCount: 10
   pieceCountIncreasePerNode: 5
-  miniBossExpectedNodes: 0300000005000000
-  miniBossJitter: 2
   miniBossPool: 0100000002000000
   finalBossPool: 03000000
   enableIntermissionShopOffers: 1
@@ -223,10 +223,10 @@ MonoBehaviour:
   initialScore: 0
   maxComposure: 100
   maxNoise: 100
-  attentionPerClearedBlock: 10
+  attentionPerClearedBlock: 4
   perfectClearComposureGain: 10
   mistakeComposureLoss: 10
-  noiseGainPerRound: 5
+  noiseGainPerRound: 6
 --- !u!1 &299773900
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,7 +488,7 @@ RectTransform:
   - {fileID: 1683483484}
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5875, y: 0}
+  m_AnchorMin: {x: 0.615, y: 0}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -2, y: 2}
   m_SizeDelta: {x: -12, y: -12}
@@ -827,8 +827,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.25, y: 0}
-  m_AnchorMax: {x: 0.5875, y: 1}
+  m_AnchorMin: {x: 0.245, y: 0}
+  m_AnchorMax: {x: 0.615, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -8, y: -16}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1001,8 +1001,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.07, y: 0.18}
   m_AnchorMax: {x: 0.32, y: 0.58}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 4}
+  m_SizeDelta: {x: 0, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &835417456
 MonoBehaviour:
@@ -1218,7 +1218,7 @@ MonoBehaviour:
   m_AssetsPPU: 16
   m_RefResolutionX: 640
   m_RefResolutionY: 360
-  m_CropFrame: 3
+  m_CropFrame: 4
   m_GridSnapping: 1
   m_FilterMode: 0
   m_UpscaleRT: 0
@@ -1255,7 +1255,7 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1
+    width: 0.999392
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
@@ -1509,7 +1509,7 @@ RectTransform:
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0.25, y: 1}
+  m_AnchorMax: {x: 0.245, y: 1}
   m_AnchoredPosition: {x: 2, y: 0}
   m_SizeDelta: {x: -12, y: -16}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2049,10 +2049,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdb59aef315a7f542982e8c7312fa845, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoundPiecePreviewView
+  titleText: {fileID: 0}
   iconRoot: {fileID: 1828680366}
   iconPrefab: {fileID: 2572207336840948431, guid: c766118088e42fc4ba9faf7402e4d529, type: 3}
   revealPolicyBehaviour: {fileID: 744327656}
-  gridCellSize: {x: 34, y: 42}
+  gridCellSize: {x: 44, y: 42}
   gridSpacing: {x: 3, y: 3}
   gridPadding: 3
   previewBlockSize: 8
@@ -2240,7 +2241,7 @@ RectTransform:
   - {fileID: 1487997953}
   m_Father: {fileID: 2119193373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5875, y: 0.5}
+  m_AnchorMin: {x: 0.615, y: 0.5}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -2, y: -2}
   m_SizeDelta: {x: -12, y: -12}
@@ -2715,7 +2716,7 @@ Transform:
   m_GameObject: {fileID: 2119857504}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.88, y: -9.5, z: 0}
+  m_LocalPosition: {x: -7.12, y: -8.31, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2733,9 +2734,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70c87b6c808cfa5488dbf910772edb55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TetrisBoardController
-  width: 10
+  width: 12
   height: 20
-  cellSize: 0.8
+  cellSize: 0.875
   lockedBlockRoot: {fileID: 2009277965}
   activeBlockRoot: {fileID: 1419530560}
   borderBlockRoot: {fileID: 0}
@@ -2758,6 +2759,9 @@ MonoBehaviour:
   colorL: {r: 1, g: 0.55, b: 0, a: 1}
   borderBlockColor: {r: 1, g: 1, b: 1, a: 1}
   garbageBlockColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  cellVisualInset: 0.0625
+  corruptedTint: {r: 0.55, g: 0.3, b: 0.7, a: 1}
+  glitchedTint: {r: 0.5, g: 0.95, b: 1, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

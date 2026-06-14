@@ -42,6 +42,30 @@ public class PieceTypeIconView : MonoBehaviour
         blockSize = size;
     }
 
+    // noise static swallowed this slot, draw junk instead of a real piece
+    public void BindObscured()
+    {
+        HideTemplateBlock();
+        Clear();
+        EnsureLayout();
+        EnsureLabel();
+        typeLabel.text = "▒▒▒";
+        typeLabel.fontSize = labelFontSize;
+
+        // a ragged clump of gray cells where the piece silhouette would be
+        for (int i = 0; i < 4; i++)
+        {
+            Image block = Instantiate(blockPrefab, blockRoot);
+            block.gameObject.SetActive(true);
+            block.color = new Color(0.35f, 0.35f, 0.38f, 1f);
+
+            RectTransform rect = block.rectTransform;
+            rect.anchoredPosition = new Vector2((i % 2) * blockSize - blockSize * 0.5f, (i / 2) * blockSize - blockSize * 0.5f);
+            rect.sizeDelta = new Vector2(blockSize - 1f, blockSize - 1f);
+            spawnedBlocks.Add(block);
+        }
+    }
+
     public void Bind(TetrominoType type)
     {
         boundType = type;
@@ -75,7 +99,8 @@ public class PieceTypeIconView : MonoBehaviour
                 normalized.y * blockSize
             ) - centerOffset + new Vector2(blockSize, blockSize) * 0.5f;
 
-            rect.sizeDelta = new Vector2(blockSize, blockSize);
+            // tiny inset so preview blocks get the same outlined look as the board
+            rect.sizeDelta = new Vector2(blockSize - 1f, blockSize - 1f);
             spawnedBlocks.Add(block);
         }
     }
@@ -172,10 +197,12 @@ public class PieceTypeIconView : MonoBehaviour
         labelRect.anchoredPosition = Vector2.zero;
         labelRect.sizeDelta = Vector2.zero;
 
-        UiTheme.Style(typeLabel, labelFontSize, FontStyles.Normal, UiTheme.TextInverse);
+        UiTheme.Style(typeLabel, labelFontSize, FontStyles.Normal, UiTheme.TextInverse, autoSize: true);
+        // lore names run longer then letter types did, shrink instead of overlapping neighbors
+        typeLabel.fontSizeMin = 4f;
         typeLabel.alignment = TextAlignmentOptions.Center;
         typeLabel.textWrappingMode = TextWrappingModes.NoWrap;
-        typeLabel.overflowMode = TextOverflowModes.Overflow;
+        typeLabel.overflowMode = TextOverflowModes.Ellipsis;
     }
 
     private void SetLabel(TetrominoType type)
@@ -187,17 +214,8 @@ public class PieceTypeIconView : MonoBehaviour
 
     private string GetTypeLabelKey(TetrominoType type)
     {
-        return type switch
-        {
-            TetrominoType.I => "piece.type.i",
-            TetrominoType.O => "piece.type.o",
-            TetrominoType.T => "piece.type.t",
-            TetrominoType.S => "piece.type.s",
-            TetrominoType.Z => "piece.type.z",
-            TetrominoType.J => "piece.type.j",
-            TetrominoType.L => "piece.type.l",
-            _ => "piece.type.unknown"
-        };
+        // pieces go by their lore name now, not boring letter types
+        return PieceLore.NameKey(PieceLore.GetProperty(type));
     }
 
     private void HandleLocaleChanged(string locale)

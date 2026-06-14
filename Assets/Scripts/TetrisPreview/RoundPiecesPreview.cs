@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class RoundPiecePreviewView : MonoBehaviour
 {
+    [SerializeField] private TMP_Text titleText;
     [SerializeField] private RectTransform iconRoot;
     [SerializeField] private PieceTypeIconView iconPrefab;
     [SerializeField] private MonoBehaviour revealPolicyBehaviour;
@@ -15,10 +17,19 @@ public class RoundPiecePreviewView : MonoBehaviour
     private IPiecePreviewRevealPolicy revealPolicy;
     private readonly List<PieceTypeIconView> spawnedIcons = new();
     private readonly List<TetrominoType> lastRoundPieces = new();
+    private readonly List<PieceTagSummary> incomingTags = new();
+    private readonly List<TMP_Text> tagRows = new();
+    private RectTransform tagsRoot;
+    private TMP_Text tagsTitleText;
+    private RunProgressTooltipView tooltipView;
     private GridLayoutGroup gridLayout;
     // effect system overrides, hidden blanks the panel and corrupted lies about types
     private bool hiddenOverride;
     private bool corruptedOverride;
+    // noise smear: 1 hides some icons behind static, 2 blanks the whole shelf
+    private int noiseInterference;
+    // item perk: show the true full piece order instead of the unique-types digest
+    private bool orderRevealOverride;
 
     private static readonly TetrominoType[] AllTypes =
     {
@@ -44,7 +55,14 @@ public class RoundPiecePreviewView : MonoBehaviour
 
     private void OnEnable()
     {
+        Loc.OnLocaleChanged += HandleLocaleChanged;
         EnsureContainer();
+        RefreshTitle();
+    }
+
+    private void OnDisable()
+    {
+        Loc.OnLocaleChanged -= HandleLocaleChanged;
     }
 
     public void ShowRoundPieces(IReadOnlyList<TetrominoType> roundPieces)
@@ -79,6 +97,26 @@ public class RoundPiecePreviewView : MonoBehaviour
         RefreshFromCache();
     }
 
+    public void SetNoiseInterference(int level)
+    {
+        int clamped = Mathf.Clamp(level, 0, 2);
+
+        if (noiseInterference == clamped)
+            return;
+
+        noiseInterference = clamped;
+        RefreshFromCache();
+    }
+
+    public void SetOrderRevealOverride(bool reveal)
+    {
+        if (orderRevealOverride == reveal)
+            return;
+
+        orderRevealOverride = reveal;
+        RefreshFromCache();
+    }
+
     private void RefreshFromCache()
     {
         if (lastRoundPieces.Count > 0)
@@ -89,22 +127,27 @@ public class RoundPiecePreviewView : MonoBehaviour
     {
         Clear();
 
-        if (revealPolicy == null)
+        if (revealPolicy == null && !orderRevealOverride)
             return;
 
         // hidden wins, the player just gets an empty shelf this round
-        if (hiddenOverride)
+        // critical noise drowns the panel the same way
+        if (hiddenOverride || noiseInterference >= 2)
             return;
 
-        List<TetrominoType> visibleTypes = revealPolicy.GetVisiblePieceTypes(lastRoundPieces);
+        // the reveal perk shows the honest full order, no digest, no lies
+        List<TetrominoType> visibleTypes = orderRevealOverride
+            ? new List<TetrominoType>(lastRoundPieces)
+            : revealPolicy.GetVisiblePieceTypes(lastRoundPieces);
 
-        if (corruptedOverride)
+        if (corruptedOverride && !orderRevealOverride)
             CorruptVisibleTypes(visibleTypes);
 
         ConfigureGrid(visibleTypes.Count);
 
-        foreach (var type in visibleTypes)
+        for (int i = 0; i < visibleTypes.Count; i++)
         {
+            TetrominoType type = visibleTypes[i];
             PieceTypeIconView icon = Instantiate(iconPrefab, iconRoot);
             RectTransform iconRect = icon.transform as RectTransform;
 
@@ -115,11 +158,111 @@ public class RoundPiecePreviewView : MonoBehaviour
             }
 
             icon.SetBlockSize(previewBlockSize);
-            icon.Bind(type);
+
+            // high noise eats some entries, only static remains where a piece was
+            bool obscured = noiseInterference >= 1 && !orderRevealOverride && (i % 2 == 1 || Random.value < 0.2f);
+
+            if (obscured)
+            {
+                icon.BindObscured();
+            }
+            else
+            {
+                icon.Bind(type);
+                AttachHoverHint(icon, type);
+            }
+
+            icon.gameObject.AddComponent<HoverScaleEffect>();
             spawnedIcons.Add(icon);
         }
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(iconRoot);
+    }
+
+    // hovering an icon explains what the lore name actually means
+    private void AttachHoverHint(PieceTypeIconView icon, TetrominoType type)
+    {
+#pragma warning disable UNT0026 // GetComponent always allocates
+        Image hoverPlate = icon.GetComponent<Image>();
+#pragma warning restore UNT0026 // GetComponent always allocates
+
+        if (hoverPlate == null)
+            hoverPlate = icon.gameObject.AddComponent<Image>();
+
+        hoverPlate.color = Color.clear;
+        hoverPlate.raycastTarget = true;
+
+#pragma warning disable UNT0026 // GetComponent always allocates
+        RunProgressHoverTarget hover = icon.GetComponent<RunProgressHoverTarget>();
+#pragma warning restore UNT0026 // GetComponent always allocates
+
+        if (hover == null)
+            hover = icon.gameObject.AddComponent<RunProgressHoverTarget>();
+
+        hover.Bind(PieceLore.DescKey(PieceLore.GetProperty(type)), tooltipView);
+    }
+
+    public void SetIncomingTags(IReadOnlyList<PieceTagSummary> tags)
+    {
+        incomingTags.Clear();
+
+        if (tags != null)
+            incomingTags.AddRange(tags);
+
+        RenderTags();
+    }
+
+    private void RenderTags()
+    {
+        EnsureTagsUi();
+
+        // header only earns its spot when something is actually incoming
+        if (tagsTitleText != null)
+        {
+            tagsTitleText.text = Loc.T("preview.tags.title");
+            tagsTitleText.gameObject.SetActive(incomingTags.Count > 0);
+        }
+
+        while (tagRows.Count < incomingTags.Count)
+        {
+            tagRows.Add(CreateTagRow());
+        }
+
+        for (int i = 0; i < tagRows.Count; i++)
+        {
+            bool active = i < incomingTags.Count;
+            tagRows[i].gameObject.SetActive(active);
+
+            if (!active)
+                continue;
+
+            PieceTagSummary summary = incomingTags[i];
+            // UNFINISHED!!! only the summary line for now, WhichPieces / ExactOrder reveal later
+            tagRows[i].text = Loc.T(PieceLore.TagNameKey(summary.tag)) + " " + Mathf.RoundToInt(Mathf.Clamp01(summary.chance) * 100f) + "%";
+            RunProgressHoverTarget hover = tagRows[i].GetComponent<RunProgressHoverTarget>();
+
+            if (hover != null)
+                hover.Bind(PieceLore.TagDescKey(summary.tag), tooltipView);
+        }
+    }
+
+    private TMP_Text CreateTagRow()
+    {
+        GameObject rowObject = new("Tag Row", typeof(RectTransform));
+        rowObject.transform.SetParent(tagsRoot, false);
+
+        TextMeshProUGUI text = rowObject.AddComponent<TextMeshProUGUI>();
+        UiTheme.Style(text, UiTheme.Small, FontStyles.Normal, UiTheme.AccentDanger);
+        text.alignment = TextAlignmentOptions.Left;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.raycastTarget = true;
+
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.minHeight = 8f;
+        layoutElement.preferredHeight = 8f;
+
+        rowObject.AddComponent<RunProgressHoverTarget>();
+        return text;
     }
 
     private void CorruptVisibleTypes(List<TetrominoType> visibleTypes)
@@ -162,6 +305,10 @@ public class RoundPiecePreviewView : MonoBehaviour
         }
 
         spawnedIcons.Clear();
+
+        // icon under the cursor might just have died, don't strand the hint
+        if (tooltipView != null)
+            tooltipView.Hide();
     }
 
     private void EnsureContainer()
@@ -182,6 +329,107 @@ public class RoundPiecePreviewView : MonoBehaviour
 
         if (gridLayout == null)
             gridLayout = iconRoot.gameObject.AddComponent<GridLayoutGroup>();
+
+        // icons keep the top, tags strip lives at the bottom
+        EnsureTitle();
+        iconRoot.anchorMin = new Vector2(0f, 0.26f);
+        iconRoot.anchorMax = new Vector2(1f, 0.86f);
+        iconRoot.offsetMin = Vector2.zero;
+        iconRoot.offsetMax = Vector2.zero;
+        EnsureTagsUi();
+    }
+
+    private void EnsureTitle()
+    {
+        if (titleText == null)
+        {
+            Transform existing = transform.Find("Pieces Title");
+
+            if (existing != null)
+                titleText = existing.GetComponent<TMP_Text>();
+        }
+
+        if (titleText == null)
+        {
+            GameObject titleObject = new("Pieces Title", typeof(RectTransform));
+            titleObject.transform.SetParent(transform, false);
+            titleText = titleObject.AddComponent<TextMeshProUGUI>();
+        }
+
+        RectTransform titleRect = titleText.rectTransform;
+        titleRect.anchorMin = new Vector2(0.05f, 0.86f);
+        titleRect.anchorMax = new Vector2(0.95f, 0.98f);
+        titleRect.offsetMin = Vector2.zero;
+        titleRect.offsetMax = Vector2.zero;
+
+        UiTheme.Style(titleText, UiTheme.Label, FontStyles.Bold, UiTheme.TextInverse, autoSize: true);
+        titleText.alignment = TextAlignmentOptions.Left;
+        titleText.textWrappingMode = TextWrappingModes.NoWrap;
+        titleText.raycastTarget = false;
+        RefreshTitle();
+    }
+
+    private void RefreshTitle()
+    {
+        if (titleText != null)
+            titleText.text = Loc.T("ui.preview.title");
+    }
+
+    private TMP_Text CreateSectionTitle(string objectName, Vector2 anchorMin, Vector2 anchorMax)
+    {
+        GameObject titleObject = new(objectName, typeof(RectTransform));
+        titleObject.transform.SetParent(transform, false);
+
+        RectTransform rect = (RectTransform)titleObject.transform;
+        rect.anchorMin = anchorMin;
+        rect.anchorMax = anchorMax;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = titleObject.AddComponent<TextMeshProUGUI>();
+        UiTheme.Style(text, UiTheme.Label, FontStyles.Bold, UiTheme.TextInverse, autoSize: true);
+        text.alignment = TextAlignmentOptions.Left;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.raycastTarget = false;
+        return text;
+    }
+
+    private void EnsureTagsUi()
+    {
+        if (tooltipView == null)
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform tooltipParent = canvas != null ? canvas.transform : transform;
+            GameObject tooltipObject = new("Preview Tooltip", typeof(RectTransform));
+            tooltipObject.transform.SetParent(tooltipParent, false);
+            tooltipView = tooltipObject.AddComponent<RunProgressTooltipView>();
+            tooltipView.Hide();
+        }
+
+        if (tagsTitleText == null)
+        {
+            tagsTitleText = CreateSectionTitle("Tags Title", new Vector2(0.05f, 0.16f), new Vector2(0.95f, 0.26f));
+            tagsTitleText.gameObject.SetActive(false);
+        }
+
+        if (tagsRoot == null)
+        {
+            GameObject rootObject = new("Tags Root", typeof(RectTransform));
+            rootObject.transform.SetParent(transform, false);
+            tagsRoot = (RectTransform)rootObject.transform;
+            tagsRoot.anchorMin = new Vector2(0.05f, 0.02f);
+            tagsRoot.anchorMax = new Vector2(0.95f, 0.15f);
+            tagsRoot.offsetMin = Vector2.zero;
+            tagsRoot.offsetMax = Vector2.zero;
+
+            VerticalLayoutGroup layout = rootObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 1f;
+            layout.childAlignment = TextAnchor.LowerLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+        }
     }
 
     private void ConfigureGrid(int itemCount)
@@ -218,5 +466,10 @@ public class RoundPiecePreviewView : MonoBehaviour
         float usableWidth = Mathf.Max(1f, width - gridPadding * 2f);
         int columns = Mathf.FloorToInt((usableWidth + gridSpacing.x) / (gridCellSize.x + gridSpacing.x));
         return Mathf.Clamp(columns, 1, itemCount);
+    }
+
+    private void HandleLocaleChanged(string locale)
+    {
+        RefreshTitle();
     }
 }

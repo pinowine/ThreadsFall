@@ -16,9 +16,10 @@ public class ShopItemSlotView : MonoBehaviour
     [SerializeField] private Button buyButton;
     [SerializeField] private TMP_Text buyButtonText;
     [SerializeField] private TMP_Text cannotBuyPopupText;
-    [SerializeField] private Color emptyColor = new(0.1f, 0.1f, 0.11f, 0.94f);
-    [SerializeField] private Color filledColor = new(0.18f, 0.2f, 0.22f, 0.98f);
-    [SerializeField] private Color lockedColor = new(0.22f, 0.18f, 0.1f, 0.98f);
+    // slot bg removed, rows float on the screen now (raycast still works at alpha 0)
+    [SerializeField] private Color emptyColor = new(0f, 0f, 0f, 0f);
+    [SerializeField] private Color filledColor = new(0f, 0f, 0f, 0f);
+    [SerializeField] private Color lockedColor = new(0f, 0f, 0f, 0f);
     [SerializeField] private Color buyButtonColor = new(0.92f, 0.92f, 0.88f, 1f);
     [SerializeField] private Color buyButtonFailureColor = new(1f, 0.2f, 0.18f, 1f);
     [SerializeField] private RunUiArtCatalog uiArtCatalog;
@@ -67,7 +68,9 @@ public class ShopItemSlotView : MonoBehaviour
         iconImage.color = hasItem && currentItem.icon != null ? Color.white : new Color(0.45f, 0.48f, 0.52f, 1f);
         nameText.text = hasItem ? Loc.T(currentItem.nameKey) : Loc.T("shop.slot.empty");
         costIconImage.enabled = hasItem;
+#pragma warning disable UNT0008 // Null propagation on Unity objects
         costIconImage.sprite = ResolveUiArtCatalog()?.GetStatSprite(RunStatIconKind.Attention);
+#pragma warning restore UNT0008 // Null propagation on Unity objects
         costText.text = hasItem ? shopController.GetModifiedCost(currentItem).ToString() : Loc.T("ui.empty");
         buyButton.interactable = hasItem;
         buyButton.gameObject.SetActive(hasItem);
@@ -98,7 +101,9 @@ public class ShopItemSlotView : MonoBehaviour
 
     private void EnsureUi()
     {
+#pragma warning disable UNT0026 // GetComponent always allocates
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
+#pragma warning restore UNT0026 // GetComponent always allocates
 
         if (rectTransform == null)
             rectTransform = gameObject.AddComponent<RectTransform>();
@@ -112,6 +117,10 @@ public class ShopItemSlotView : MonoBehaviour
             backgroundImage = gameObject.AddComponent<Image>();
 
         backgroundImage.raycastTarget = true;
+
+        // zoom feedback so the hovered shelf row pops out
+        if (gameObject.GetComponent<HoverScaleEffect>() == null)
+            gameObject.AddComponent<HoverScaleEffect>().SetHoverScale(1.06f);
 
         HorizontalLayoutGroup layout = gameObject.GetComponent<HorizontalLayoutGroup>();
 
@@ -240,7 +249,9 @@ public class ShopItemSlotView : MonoBehaviour
 
     private void SetFixedLayout(GameObject target, float width, float height)
     {
+#pragma warning disable UNT0026 // GetComponent always allocates
         LayoutElement layoutElement = target.GetComponent<LayoutElement>();
+#pragma warning restore UNT0026 // GetComponent always allocates
 
         if (layoutElement == null)
             layoutElement = target.AddComponent<LayoutElement>();
@@ -657,6 +668,14 @@ public class ShopItemHoverTarget : MonoBehaviour, IPointerEnterHandler, IPointer
     public void OnPointerMove(PointerEventData eventData)
     {
         tooltipView?.MoveTo(eventData.position);
+    }
+
+    private void OnDisable()
+    {
+        // slot can vanish mid hover (buying etc), don't leave the tooltip stranded
+        // unity null check on purpose, ?. would still call into a destroyed tooltip
+        if (tooltipView != null)
+            tooltipView.Hide();
     }
 }
 

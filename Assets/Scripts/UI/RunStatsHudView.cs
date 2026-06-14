@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class RunStatsHudView : MonoBehaviour
@@ -18,10 +19,12 @@ public class RunStatsHudView : MonoBehaviour
     [SerializeField] private RectTransform hudPanel;
     [SerializeField] private RectTransform itemsPanel;
 
-    private readonly List<ShopPurchasedItemRowView> purchasedItemRows = new();
+    private readonly List<PurchasedItemIconView> purchasedItemIcons = new();
     private bool statsSubscribed;
     private bool shopSubscribed;
+    private bool effectsSubscribed;
     private RunShopController shopController;
+    private RunEffectSystem effectSystem;
     private RectTransform statusRowsRoot;
     private HudStatRowView attentionRow;
     private HudStatRowView composureRow;
@@ -40,6 +43,7 @@ public class RunStatsHudView : MonoBehaviour
         Loc.OnLocaleChanged += HandleLocaleChanged;
         SubscribeStats();
         SubscribeShop();
+        SubscribeEffects();
         Refresh();
     }
 
@@ -48,6 +52,7 @@ public class RunStatsHudView : MonoBehaviour
         Loc.OnLocaleChanged -= HandleLocaleChanged;
         UnsubscribeStats();
         UnsubscribeShop();
+        UnsubscribeEffects();
     }
 
     public void SetStatsController(RunStatsController controller)
@@ -70,6 +75,23 @@ public class RunStatsHudView : MonoBehaviour
         shopController = controller;
         SubscribeShop();
         Refresh();
+    }
+
+    public void SetEffectSystem(RunEffectSystem system)
+    {
+        if (effectSystem == system)
+            return;
+
+        UnsubscribeEffects();
+        effectSystem = system;
+        SubscribeEffects();
+        Refresh();
+    }
+
+    private void HandleEffectsChanged()
+    {
+        // consumption state drives the purchased icon tints
+        RefreshPurchasedItems();
     }
 
     private void SubscribeStats()
@@ -108,6 +130,24 @@ public class RunStatsHudView : MonoBehaviour
         shopSubscribed = false;
     }
 
+    private void SubscribeEffects()
+    {
+        if (effectSystem == null || effectsSubscribed)
+            return;
+
+        effectSystem.EffectsChanged += HandleEffectsChanged;
+        effectsSubscribed = true;
+    }
+
+    private void UnsubscribeEffects()
+    {
+        if (effectSystem == null || !effectsSubscribed)
+            return;
+
+        effectSystem.EffectsChanged -= HandleEffectsChanged;
+        effectsSubscribed = false;
+    }
+
     private void HandleStatsChanged(RunStatsController stats)
     {
         Refresh();
@@ -139,11 +179,24 @@ public class RunStatsHudView : MonoBehaviour
 
         if (combinedStatsText != null)
         {
-            combinedStatsText.text = Loc.T("hud.status_title");
+            combinedStatsText.text = MaybeDistort(Loc.T("hud.status_title"));
         }
 
         RefreshStatusRows();
         RefreshPurchasedItems();
+    }
+
+    // at high noise the words drown, only the numbers stay legible
+    private string MaybeDistort(string text)
+    {
+        if (statsController == null || !statsController.ShouldDistortUiText)
+            return text;
+
+        if (effectSystem != null && effectSystem.HasUiCorruptionShield)
+            return text;
+
+        float intensity = statsController.NoiseTier == NoiseTier.Critical ? 0.75f : 0.45f;
+        return NoiseTextFx.Distort(text, intensity, statsController.Noise);
     }
 
     private void RefreshStatusRows()
@@ -154,9 +207,9 @@ public class RunStatsHudView : MonoBehaviour
             return;
 
         RunUiArtCatalog artCatalog = ResolveUiArtCatalog();
-        attentionRow.Bind(artCatalog != null ? artCatalog.attentionIcon : null, Loc.T("hud.attention.label"), statsController.Attention.ToString());
-        composureRow.Bind(artCatalog != null ? artCatalog.composureIcon : null, Loc.T("hud.composure.label"), statsController.Composure.ToString());
-        noiseRow.Bind(artCatalog != null ? artCatalog.noiseIcon : null, Loc.T("hud.noise.label"), statsController.Noise.ToString());
+        attentionRow.Bind(artCatalog != null ? artCatalog.attentionIcon : null, MaybeDistort(Loc.T("hud.attention.label")), statsController.Attention.ToString());
+        composureRow.Bind(artCatalog != null ? artCatalog.composureIcon : null, MaybeDistort(Loc.T("hud.composure.label")), statsController.Composure.ToString());
+        noiseRow.Bind(artCatalog != null ? artCatalog.noiseIcon : null, MaybeDistort(Loc.T("hud.noise.label")), statsController.Noise.ToString());
     }
 
     private void RefreshPurchasedItems()
@@ -164,21 +217,23 @@ public class RunStatsHudView : MonoBehaviour
         if (purchasedItemsText == null)
             return;
 
+        SetText(purchasedItemsText, MaybeDistort(Loc.T("hud.purchased_items")));
+
         if (shopController == null || shopController.PurchasedItems.Count <= 0)
         {
-            SetText(purchasedItemsText, Loc.T("hud.purchased_items"));
-            SetPurchasedRowCount(0);
+            SetPurchasedIconCount(0);
             return;
         }
 
-        SetText(purchasedItemsText, Loc.T("hud.purchased_items"));
         EnsurePurchasedItemsRoot();
         EnsureTooltip();
-        SetPurchasedRowCount(shopController.PurchasedItems.Count);
+        SetPurchasedIconCount(shopController.PurchasedItems.Count);
 
         for (int i = 0; i < shopController.PurchasedItems.Count; i++)
         {
-            purchasedItemRows[i].Bind(shopController.PurchasedItems[i], tooltipView);
+            ShopItemDefinition item = shopController.PurchasedItems[i];
+            ItemPerkStatus status = effectSystem != null ? effectSystem.GetItemStatus(item.nameKey) : ItemPerkStatus.Consumed;
+            purchasedItemIcons[i].Bind(item, tooltipView, status);
         }
     }
 
@@ -198,6 +253,7 @@ public class RunStatsHudView : MonoBehaviour
         MoveToPanel(combinedStatsText.rectTransform, ResolveHudPanel());
         ConfigureText(combinedStatsText, new Vector2(0.05f, 0.8f), new Vector2(0.95f, 0.96f), 9);
         EnsureStatusRows();
+        RemoveLegacyEffectsUi();
 
         if (purchasedItemsText == null)
             purchasedItemsText = FindOrCreatePurchasedItemsText();
@@ -210,6 +266,21 @@ public class RunStatsHudView : MonoBehaviour
 
         EnsurePurchasedItemsRoot();
         EnsureTooltip();
+    }
+
+    // the effects list used to live here, items panel is icons only now
+    private void RemoveLegacyEffectsUi()
+    {
+        DestroyLegacyObject("EffectsText");
+        DestroyLegacyObject("EffectRowsRoot");
+    }
+
+    private void DestroyLegacyObject(string objectName)
+    {
+        Transform legacy = FindDescendant(transform, objectName);
+
+        if (legacy != null)
+            Destroy(legacy.gameObject);
     }
 
     private void EnsureStatusRows()
@@ -345,22 +416,28 @@ public class RunStatsHudView : MonoBehaviour
             purchasedItemsRoot = (RectTransform)rootObject.transform;
         }
 
-        purchasedItemsRoot.anchorMin = new Vector2(0.05f, 0.08f);
-        purchasedItemsRoot.anchorMax = new Vector2(0.95f, 0.78f);
+        purchasedItemsRoot.anchorMin = new Vector2(0.05f, 0.06f);
+        purchasedItemsRoot.anchorMax = new Vector2(0.95f, 0.8f);
         purchasedItemsRoot.offsetMin = Vector2.zero;
         purchasedItemsRoot.offsetMax = Vector2.zero;
 
-        VerticalLayoutGroup layout = purchasedItemsRoot.GetComponent<VerticalLayoutGroup>();
+        // icons wrap into a grid now, names moved into the hover tooltip
+        VerticalLayoutGroup legacyLayout = purchasedItemsRoot.GetComponent<VerticalLayoutGroup>();
+
+        if (legacyLayout != null)
+            Destroy(legacyLayout);
+
+        GridLayoutGroup layout = purchasedItemsRoot.GetComponent<GridLayoutGroup>();
 
         if (layout == null)
-            layout = purchasedItemsRoot.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout = purchasedItemsRoot.gameObject.AddComponent<GridLayoutGroup>();
 
-        layout.spacing = 2f;
+        layout.cellSize = new Vector2(15f, 15f);
+        layout.spacing = new Vector2(3f, 3f);
+        layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        layout.startAxis = GridLayoutGroup.Axis.Horizontal;
         layout.childAlignment = TextAnchor.UpperLeft;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
-        layout.childForceExpandHeight = false;
+        layout.constraint = GridLayoutGroup.Constraint.Flexible;
     }
 
     private void EnsureTooltip()
@@ -389,23 +466,32 @@ public class RunStatsHudView : MonoBehaviour
         return uiArtCatalog;
     }
 
-    private void SetPurchasedRowCount(int count)
+    private void SetPurchasedIconCount(int count)
     {
         EnsurePurchasedItemsRoot();
 
         if (purchasedItemsRoot == null)
             return;
 
-        while (purchasedItemRows.Count < count)
+        // older saves of the panel may still hold the text rows, clear them once
+        for (int i = purchasedItemsRoot.childCount - 1; i >= 0; i--)
         {
-            GameObject rowObject = new("Purchased Item Row", typeof(RectTransform));
-            rowObject.transform.SetParent(purchasedItemsRoot, false);
-            purchasedItemRows.Add(rowObject.AddComponent<ShopPurchasedItemRowView>());
+            Transform child = purchasedItemsRoot.GetChild(i);
+
+            if (child.GetComponent<ShopPurchasedItemRowView>() != null)
+                Destroy(child.gameObject);
         }
 
-        for (int i = 0; i < purchasedItemRows.Count; i++)
+        while (purchasedItemIcons.Count < count)
         {
-            purchasedItemRows[i].gameObject.SetActive(i < count);
+            GameObject iconObject = new("Purchased Item Icon", typeof(RectTransform));
+            iconObject.transform.SetParent(purchasedItemsRoot, false);
+            purchasedItemIcons.Add(iconObject.AddComponent<PurchasedItemIconView>());
+        }
+
+        for (int i = 0; i < purchasedItemIcons.Count; i++)
+        {
+            purchasedItemIcons[i].gameObject.SetActive(i < count);
         }
     }
 
@@ -444,8 +530,12 @@ public class RunStatsHudView : MonoBehaviour
 
     private void ResolvePanelRoots()
     {
-        hudPanel ??= FindPanel("HUDPanel");
-        itemsPanel ??= FindPanel("ItemsPanel");
+        // serialized fields deserialize as unity fake null, so ??= never fires, compare with == instead
+        if (hudPanel == null)
+            hudPanel = FindPanel("HUDPanel");
+
+        if (itemsPanel == null)
+            itemsPanel = FindPanel("ItemsPanel");
     }
 
     private RectTransform FindPanel(string objectName)

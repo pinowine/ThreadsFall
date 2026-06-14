@@ -20,6 +20,10 @@ public static class GameEvents
     public static Action OnBoardChanged;
     public static Action<TrollEffectType> OnTrollEffectBlocked;
     public static Action OnTrollEffectsChanged;
+    public static Action<int> OnCorruptedLineCleared;
+    // boss fired an active skill mid round (name key, the skill spec)
+    public static Action<string, EffectSpec> OnBossSkillUsed;
+    public static Action<string> OnBossSkillBlocked;
 
     public static void RunStateChanged(RunGameState state)
     {
@@ -104,5 +108,20 @@ public static class GameEvents
     public static void TrollEffectsChanged()
     {
         OnTrollEffectsChanged?.Invoke();
+    }
+
+    public static void CorruptedLineCleared(int lines)
+    {
+        OnCorruptedLineCleared?.Invoke(lines);
+    }
+
+    public static void BossSkillUsed(string bossNameKey, EffectSpec skill)
+    {
+        OnBossSkillUsed?.Invoke(bossNameKey, skill);
+    }
+
+    public static void BossSkillBlocked(string bossNameKey)
+    {
+        OnBossSkillBlocked?.Invoke(bossNameKey);
     }
 }

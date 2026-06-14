@@ -97,20 +97,76 @@
       "value": "效果：无"
     },
     {
+      "key": "piece.prop.long_take.name",
+      "value": "长文"
+    },
+    {
+      "key": "piece.prop.long_take.desc",
+      "value": "「I」直条四格，一条道走到黑，专救深坑"
+    },
+    {
+      "key": "piece.prop.echo_chamber.name",
+      "value": "回音室"
+    },
+    {
+      "key": "piece.prop.echo_chamber.desc",
+      "value": "「O」方块四格，怎么转都是同一个样子"
+    },
+    {
+      "key": "piece.prop.bait_hook.name",
+      "value": "钓饵"
+    },
+    {
+      "key": "piece.prop.bait_hook.desc",
+      "value": "「T」三叉，哪都能塞，所以才诱人"
+    },
+    {
+      "key": "piece.prop.misdirection.name",
+      "value": "带节奏"
+    },
+    {
+      "key": "piece.prop.misdirection.desc",
+      "value": "「S/Z」斜块，看着有用，最爱留坑"
+    },
+    {
+      "key": "piece.prop.derail.name",
+      "value": "歪楼"
+    },
+    {
+      "key": "piece.prop.derail.desc",
+      "value": "「L/J」拐角，一拐就把楼带歪"
+    },
+    {
+      "key": "piece.tag.corrupted.name",
+      "value": "被污染"
+    },
+    {
+      "key": "piece.tag.corrupted.desc",
+      "value": "消除含污染块的行会+10噪声"
+    },
+    {
+      "key": "piece.tag.glitched.name",
+      "value": "故障"
+    },
+    {
+      "key": "piece.tag.glitched.desc",
+      "value": "旋转时有30%概率转向相反方向"
+    },
+    {
       "key": "boss.effect.algorithm",
-      "value": "效果：回合开始时噪声+8，方块预览被隐藏"
+      "value": "效果：注意力收入-10%，方块预览被隐藏，30%的方块被污染，下落速度+35%"
     },
     {
       "key": "boss.effect.anonymous",
-      "value": "效果：本回合方块预览被隐藏"
+      "value": "效果：本回合方块预览被隐藏；噪声高时它反而安静"
     },
     {
       "key": "boss.effect.fake_scientist",
-      "value": "效果：方块预览会谎报部分方块类型"
+      "value": "效果：方块预览有时会说谎；你锁定的长文越多它越来劲"
     },
     {
       "key": "boss.effect.meme",
-      "value": "效果：方块预览会谎报部分方块类型"
+      "value": "效果：方块预览会说谎，35%的方块带故障"
     },
     {
       "key": "boss.effect.fanwar_idol",
@@ -222,7 +278,7 @@
     },
     {
       "key": "ui.preview.title",
-      "value": "下一个方块"
+      "value": "方块"
     },
     {
       "key": "ui.preview.normal",
@@ -338,7 +394,7 @@
     },
     {
       "key": "shop.item.archived_screenshot.effect",
-      "value": "下一轮中，Boss 放置阻碍物的能力不再生效。"
+      "value": "下一次 Boss，阻挡格会被拦下。"
     },
     {
       "key": "shop.item.text_wall.name",
@@ -350,7 +406,7 @@
     },
     {
       "key": "shop.item.text_wall.effect",
-      "value": "70% 概率移除一个当前异常效果。"
+      "value": "持续：注意力收入+10%。"
     },
     {
       "key": "shop.item.mute_word_engineering.name",
@@ -362,7 +418,7 @@
     },
     {
       "key": "shop.item.mute_word_engineering.effect",
-      "value": "本局内隐藏 Boss 行为与意图。"
+      "value": "持续：噪声不再扰乱你的界面文字。"
     },
     {
       "key": "shop.item.breathing_draft.name",
@@ -374,7 +430,7 @@
     },
     {
       "key": "shop.item.breathing_draft.effect",
-      "value": "没有特殊效果。"
+      "value": "持续：每回合开始时镇定+3。"
     },
     {
       "key": "shop.item.fifteen_minute_mute.name",
@@ -386,7 +442,7 @@
     },
     {
       "key": "shop.item.fifteen_minute_mute.effect",
-      "value": "下一轮隐藏 Boss 意图。"
+      "value": "下一回合，Boss无法使用任何技能。"
     },
     {
       "key": "shop.item.fact_check_tag.name",
@@ -398,7 +454,7 @@
     },
     {
       "key": "shop.item.fact_check_tag.effect",
-      "value": "下一轮阻止假预览。"
+      "value": "持续：方块预览不再会被隐藏或伪造。"
     },
     {
       "key": "shop.item.moderation_queue.name",
@@ -410,7 +466,7 @@
     },
     {
       "key": "shop.item.moderation_queue.effect",
-      "value": "若存在异常效果，则移除一个。"
+      "value": "如果有当前异常效果，移除其中一个。"
     },
     {
       "key": "shop.item.slow_reply.name",
@@ -422,7 +478,7 @@
     },
     {
       "key": "shop.item.slow_reply.effect",
-      "value": "下一轮阻止信任降低。"
+      "value": "持续：下落速度-15%。"
     },
     {
       "key": "shop.item.clear_cache.name",
@@ -434,7 +490,7 @@
     },
     {
       "key": "shop.item.clear_cache.effect",
-      "value": "下一轮阻止预览隐藏。"
+      "value": "噪声归零。"
     },
     {
       "key": "shop.item.close_dms.name",
@@ -446,7 +502,7 @@
     },
     {
       "key": "shop.item.close_dms.effect",
-      "value": "下一轮阻止噪声增加。"
+      "value": "下一次 Boss，噪音增加会被拦下。"
     },
     {
       "key": "shop.item.anti_empathy_filter.name",
@@ -458,7 +514,7 @@
     },
     {
       "key": "shop.item.anti_empathy_filter.effect",
-      "value": "下一轮隐藏 Boss 意图。"
+      "value": "下一次Boss，腐化方块会被拦下。"
     },
     {
       "key": "shop.item.call_for_sources.name",
@@ -470,7 +526,7 @@
     },
     {
       "key": "shop.item.call_for_sources.effect",
-      "value": "下一轮阻止假预览。"
+      "value": "持续：预览展示真实的方块顺序与标签。"
     },
     {
       "key": "shop.item.laugh_reaction.name",
@@ -482,7 +538,7 @@
     },
     {
       "key": "shop.item.laugh_reaction.effect",
-      "value": "没有特殊效果。"
+      "value": "下一次 Boss，故障方块会被拦下。"
     },
     {
       "key": "shop.item.push_back.name",
@@ -490,11 +546,11 @@
     },
     {
       "key": "shop.item.push_back.desc",
-      "value": "你回应压力，但不让它掌舵。"
+      "value": "你坚定回应，但不让这条讨论掌舵。"
     },
     {
       "key": "shop.item.push_back.effect",
-      "value": "50% 概率移除一个当前异常效果。"
+      "value": "拦下Boss的下一次技能。"
     },
     {
       "key": "hud.attention",
@@ -543,6 +599,182 @@
     {
       "key": "hud.purchased_none",
       "value": "暂无"
+    },
+    {
+      "key": "hud.effects",
+      "value": "Effects"
+    },
+    {
+      "key": "effect.kind.add_noise",
+      "value": "{0} noise"
+    },
+    {
+      "key": "effect.kind.add_composure",
+      "value": "{0} composure"
+    },
+    {
+      "key": "effect.kind.add_attention",
+      "value": "{0} attention"
+    },
+    {
+      "key": "effect.kind.hide_preview",
+      "value": "preview hidden"
+    },
+    {
+      "key": "effect.kind.fake_preview",
+      "value": "fake preview"
+    },
+    {
+      "key": "effect.kind.garbage",
+      "value": "{0} blocking cell(s)"
+    },
+    {
+      "key": "effect.kind.block",
+      "value": "block {0}"
+    },
+    {
+      "key": "effect.kind.remove",
+      "value": "{0}% remove effect"
+    },
+    {
+      "key": "effect.kind.hide_intent",
+      "value": "hide boss intent"
+    },
+    {
+      "key": "effect.kind.corrupt",
+      "value": "{0}% corrupted pieces"
+    },
+    {
+      "key": "effect.kind.glitch",
+      "value": "{0}% glitched pieces"
+    },
+    {
+      "key": "effect.kind.fall_speed",
+      "value": "{0}% fall speed"
+    },
+    {
+      "key": "effect.row.blocked",
+      "value": "Blocked: {0}"
+    },
+    {
+      "key": "effect.source.boss",
+      "value": "Boss"
+    },
+    {
+      "key": "effect.source.item",
+      "value": "Item"
+    },
+    {
+      "key": "effect.source.unknown",
+      "value": "Unknown"
+    },
+    {
+      "key": "effect.status.active",
+      "value": "Active"
+    },
+    {
+      "key": "effect.status.pending",
+      "value": "Pending"
+    },
+    {
+      "key": "effect.status.blocked",
+      "value": "Blocked"
+    },
+    {
+      "key": "effect.status.consumed",
+      "value": "Consumed"
+    },
+    {
+      "key": "effect.value.yes",
+      "value": "Yes"
+    },
+    {
+      "key": "effect.value.no",
+      "value": "No"
+    },
+    {
+      "key": "effect.tooltip.source",
+      "value": "Source: {0}"
+    },
+    {
+      "key": "effect.tooltip.origin",
+      "value": "Origin: {0}"
+    },
+    {
+      "key": "effect.tooltip.trigger",
+      "value": "Trigger: {0}"
+    },
+    {
+      "key": "effect.tooltip.status",
+      "value": "Status: {0}"
+    },
+    {
+      "key": "effect.tooltip.consumed",
+      "value": "Consumed: {0}"
+    },
+    {
+      "key": "effect.trigger.on_acquire",
+      "value": "on buy"
+    },
+    {
+      "key": "effect.trigger.round_start",
+      "value": "round start"
+    },
+    {
+      "key": "effect.trigger.round_end",
+      "value": "round end"
+    },
+    {
+      "key": "effect.trigger.line_clear",
+      "value": "line clear"
+    },
+    {
+      "key": "effect.trigger.piece_locked",
+      "value": "piece locked"
+    },
+    {
+      "key": "effect.trigger.shop_enter",
+      "value": "shop enter"
+    },
+    {
+      "key": "effect.trigger.passive",
+      "value": "passive"
+    },
+    {
+      "key": "troll.type.none",
+      "value": "nothing"
+    },
+    {
+      "key": "troll.type.fake_preview",
+      "value": "fake preview"
+    },
+    {
+      "key": "troll.type.garbage",
+      "value": "blocking cells"
+    },
+    {
+      "key": "troll.type.hide_preview",
+      "value": "hidden preview"
+    },
+    {
+      "key": "troll.type.noise",
+      "value": "noise gain"
+    },
+    {
+      "key": "troll.type.trust",
+      "value": "composure loss"
+    },
+    {
+      "key": "troll.type.fall_speed",
+      "value": "fall speed"
+    },
+    {
+      "key": "troll.type.corrupt",
+      "value": "corrupted pieces"
+    },
+    {
+      "key": "troll.type.glitch",
+      "value": "glitched pieces"
     },
     {
       "key": "piece.type.i",
@@ -611,6 +843,62 @@
     {
       "key": "run.game_over.body",
       "value": "分数：{0}\n注意力：{1}\n消行：{2}\n镇定：{3}\n噪音：{4}"
+    },
+    {
+      "key": "preview.tags.title",
+      "value": "标签"
+    },
+    {
+      "key": "effect.kind.top_garbage",
+      "value": "顶部出现{0}个垃圾块"
+    },
+    {
+      "key": "effect.kind.rotation_lock",
+      "value": "旋转被禁用{0}秒"
+    },
+    {
+      "key": "effect.kind.steal_line",
+      "value": "删除你最底部的一行，没有任何奖励"
+    },
+    {
+      "key": "effect.kind.attention_percent",
+      "value": "注意力收入{0}%"
+    },
+    {
+      "key": "effect.kind.block_skill",
+      "value": "拦下Boss的下一次技能"
+    },
+    {
+      "key": "effect.kind.disable_skills",
+      "value": "下一回合Boss无法使用技能"
+    },
+    {
+      "key": "effect.kind.true_preview",
+      "value": "预览不会被隐藏或伪造"
+    },
+    {
+      "key": "effect.kind.reveal_tags",
+      "value": "展示真实的方块顺序与标签"
+    },
+    {
+      "key": "effect.kind.block_corruption",
+      "value": "噪声无法扰乱界面"
+    },
+    {
+      "key": "boss.tooltip.skills",
+      "value": "技能（回合中随时发动）："
+    },
+    {
+      "key": "boss.tooltip.upcoming",
+      "value": "前方Boss：{0}"
+    },
+    {
+      "key": "shop.tooltip.persistent",
+      "value": "● 持续效果"
+    },
+    {
+      "key": "shop.tooltip.one_time",
+      "value": "● 一次性效果"
     }
   ]
 }

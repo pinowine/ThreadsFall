@@ -8,12 +8,14 @@ public class ShopTooltipView : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text bodyText;
     [SerializeField] private TMP_Text specialEffectText;
+    [SerializeField] private TMP_Text effectTypeText;
     [SerializeField] private RunUiArtCatalog uiArtCatalog;
 
     private readonly List<ShopEffectIconRowView> effectRows = new();
     private RectTransform rectTransform;
     private RectTransform effectRowsRoot;
     private Canvas canvas;
+    private CanvasGroup canvasGroup;
     private int activeEffectRowCount;
 
     private void Awake()
@@ -34,13 +36,19 @@ public class ShopTooltipView : MonoBehaviour
         bodyText.text = Loc.T(item.descriptionKey);
         RefreshEffectRows(item, strikeTriggeredEffects);
         specialEffectText.text = strikeTriggeredEffects ? "<s>" + effectSummary + "</s>" : effectSummary;
-        gameObject.SetActive(true);
+
+        // tells the player whether this keeps working or burns on use
+        bool persistent = item.HasPersistentEffect;
+        effectTypeText.text = Loc.T(persistent ? "shop.tooltip.persistent" : "shop.tooltip.one_time");
+        effectTypeText.color = persistent ? UiTheme.AccentSafe : UiTheme.TextMuted;
+
+        canvasGroup.alpha = 1f;
         MoveTo(screenPosition);
     }
 
     public void MoveTo(Vector2 screenPosition)
     {
-        if (!gameObject.activeSelf)
+        if (canvasGroup == null || canvasGroup.alpha <= 0f)
             return;
 
         EnsureUi();
@@ -72,7 +80,9 @@ public class ShopTooltipView : MonoBehaviour
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        // alpha hide instead of SetActive, deactivating left ghost glyphs on screen sometimes
+        EnsureUi();
+        canvasGroup.alpha = 0f;
     }
 
     private void EnsureUi()
@@ -94,7 +104,12 @@ public class ShopTooltipView : MonoBehaviour
         background.color = UiTheme.TooltipBg;
         background.raycastTarget = false;
         rectTransform.sizeDelta = new Vector2(184f, 186f);
-        gameObject.AddComponent<CanvasGroup>().blocksRaycasts = false;
+        canvasGroup = gameObject.GetComponent<CanvasGroup>();
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        canvasGroup.blocksRaycasts = false;
 
         VerticalLayoutGroup layout = gameObject.GetComponent<VerticalLayoutGroup>();
 
@@ -112,6 +127,7 @@ public class ShopTooltipView : MonoBehaviour
         bodyText = CreateText("Tooltip Body", UiTheme.Body, FontStyles.Normal);
         effectRowsRoot = CreateEffectRowsRoot();
         specialEffectText = CreateText("Tooltip Special Effect", UiTheme.Body, FontStyles.Normal);
+        effectTypeText = CreateText("Tooltip Effect Type", UiTheme.Label, FontStyles.Bold);
     }
 
     private void RefreshEffectRows(ShopItemDefinition item, bool strikeTriggeredEffects)

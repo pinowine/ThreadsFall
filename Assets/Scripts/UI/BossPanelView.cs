@@ -20,6 +20,8 @@ public class BossPanelView : MonoBehaviour
     [SerializeField] private TMP_Text bossCommentText;
     [SerializeField] private TMP_Text bossEffectText;
     [SerializeField] private RunEffectSystem effectController;
+
+    private RectTransform effectBoxRect;
     [SerializeField] private RunUiArtCatalog uiArtCatalog;
     [SerializeField] private float avatarSwapDuration = 0.24f;
 
@@ -55,6 +57,9 @@ public class BossPanelView : MonoBehaviour
     private TMP_Text nextRoundButtonText;
     private RunProgressView progressView;
     private ShopTooltipView tooltipView;
+    private RunProgressTooltipView bossInfoTooltip;
+    private BossInfoHoverTarget avatarHoverTarget;
+    private BossInfoHoverTarget nameHoverTarget;
     private bool layoutReady;
     private int currentProgressIndex;
     private int completedNodeCount;
@@ -257,10 +262,13 @@ public class BossPanelView : MonoBehaviour
         SetText(bossNameText, Loc.T(displayNameKey));
         ConfigureAvatar(displayNodeType, GetAvatarLabel(displayNodeType), bossDefinition != null ? bossDefinition.avatarSequence : null, displayNodeType != RunNodeType.Normal);
 
+        // aura and skill details live on the portrait/name hover now
+        BindBossInfoHover(displayNode != null ? displayNode.BossDefinition : null, displayNodeType);
+
         if (displayNodeType == RunNodeType.Normal)
         {
             SetText(bossCommentText, Loc.T("run.node.search.comment"));
-            SetText(bossEffectText, string.Empty);
+            SetEffectBoxText(string.Empty);
             return;
         }
 
@@ -283,19 +291,23 @@ public class BossPanelView : MonoBehaviour
         if (bossCommentText != null)
             bossCommentText.text = bossEffectText == null ? comment + "\n" + effect : comment;
 
-        if (bossEffectText != null)
-            bossEffectText.text = effect;
+        SetEffectBoxText(effect);
     }
 
     private void RefreshShopMode()
     {
+        BindBossInfoHover(null, RunNodeType.Normal);
         SetText(bossNameText, Loc.T("shop.encounter.name"));
         ConfigureAvatar(RunNodeType.Normal, "SHOP", ResolveUiArtCatalog()?.shopkeeperAvatar, false);
+        SetEffectBoxText(string.Empty);
         SetDialogTextVisible(false);
         SetShopRootVisible(true);
 
         if (shopFeedbackText != null)
+        {
+            shopFeedbackText.gameObject.SetActive(true);
             shopFeedbackText.text = FormatShopBody();
+        }
 
         for (int i = 0; i < shelfSlotViews.Count; i++)
         {
@@ -307,12 +319,64 @@ public class BossPanelView : MonoBehaviour
 
     private void RefreshSummaryMode(string titleKey, string bodyKey, string avatarLabel)
     {
-        SetShopRootVisible(false);
+        BindBossInfoHover(null, RunNodeType.Normal);
+        // shop root stays on so the restart button inside it can actually show
+        SetShopRootVisible(true);
+
+        if (shopFeedbackText != null)
+            shopFeedbackText.gameObject.SetActive(false);
+
+        for (int i = 0; i < shelfSlotViews.Count; i++)
+        {
+            shelfSlotViews[i].gameObject.SetActive(false);
+        }
+
         SetDialogTextVisible(true);
         SetText(bossNameText, Loc.T(titleKey));
         ConfigureAvatar(RunNodeType.FinalBoss, avatarLabel);
         SetText(bossCommentText, FormatStats(bodyKey));
-        SetText(bossEffectText, string.Empty);
+        SetEffectBoxText(string.Empty);
+    }
+
+    // hovering the portrait or the name explains what this boss passively does
+    // and which skills it can throw mid round
+    private void BindBossInfoHover(BossDefinition boss, RunNodeType nodeType)
+    {
+        EnsureLayout();
+
+        string info = BuildBossInfoText(boss, nodeType);
+        avatarHoverTarget?.Bind(info, bossInfoTooltip);
+        nameHoverTarget?.Bind(info, bossInfoTooltip);
+    }
+
+    private string BuildBossInfoText(BossDefinition boss, RunNodeType nodeType)
+    {
+        if (boss == null)
+            return string.Empty;
+
+        if (effectController != null && !effectController.CanShowBossIntent)
+            return Loc.T("boss.hidden.comment") + "\n" + Loc.T("boss.hidden.effect");
+
+        var builder = new System.Text.StringBuilder();
+
+        if (nodeType == RunNodeType.Normal)
+            builder.AppendLine(Loc.Format("boss.tooltip.upcoming", Loc.T(boss.nameKey)));
+
+        string effectKey = string.IsNullOrWhiteSpace(boss.effectKey) ? "boss.effect.none" : boss.effectKey;
+        builder.AppendLine(Loc.T(effectKey));
+
+        if (boss.skills != null && boss.skills.Count > 0)
+        {
+            builder.AppendLine(Loc.T("boss.tooltip.skills"));
+
+            for (int i = 0; i < boss.skills.Count; i++)
+            {
+                if (boss.skills[i] != null && boss.skills[i].kind != EffectKind.None)
+                    builder.AppendLine("- " + EffectLore.KindLabel(boss.skills[i]));
+            }
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private void SetHiddenBossText()
@@ -326,8 +390,7 @@ public class BossPanelView : MonoBehaviour
         if (bossCommentText != null)
             bossCommentText.text = bossEffectText == null ? comment + "\n" + effect : comment;
 
-        if (bossEffectText != null)
-            bossEffectText.text = effect;
+        SetEffectBoxText(effect);
     }
 
     private void ConfigureAvatar(RunNodeType nodeType, string label, SpriteSequenceDefinition avatarSequence = null, bool playSpeaking = false)
@@ -383,7 +446,7 @@ public class BossPanelView : MonoBehaviour
         avatarPreviousRect.gameObject.SetActive(true);
         avatarPreviousImage.sprite = avatarImage.sprite;
         avatarPreviousImage.color = avatarImage.color;
-        avatarPreviousImage.preserveAspect = true;
+        avatarPreviousImage.preserveAspect = false;
         bool showingText = avatarText != null && avatarText.gameObject.activeSelf;
         avatarPreviousText.gameObject.SetActive(showingText);
         avatarPreviousText.text = showingText ? avatarText.text : string.Empty;
@@ -483,14 +546,8 @@ public class BossPanelView : MonoBehaviour
 
     private string FormatShopBody()
     {
-        string attention = currentStats != null
-            ? Loc.Format("hud.attention", currentStats.Attention)
-            : string.Empty;
-
-        if (string.IsNullOrWhiteSpace(shopPrompt))
-            return attention;
-
-        return attention + "\n" + shopPrompt;
+        // attention already lives in the hud, shop only shows purchase feedback
+        return string.IsNullOrWhiteSpace(shopPrompt) ? string.Empty : shopPrompt;
     }
 
     private string FormatStats(string key)
@@ -611,9 +668,8 @@ public class BossPanelView : MonoBehaviour
 
         if (panelImage != null)
         {
-            panelImage.enabled = true;
-            panelImage.color = UiTheme.PanelBg;
-            panelImage.raycastTarget = false;
+            // no big gray backdrop anymore, content floats on the game bg
+            panelImage.enabled = false;
         }
 
         progressView = GetOrCreateChildComponent<RunProgressView>("Run Progress", transform);
@@ -624,18 +680,24 @@ public class BossPanelView : MonoBehaviour
             bossNameText = CreateText("Encounter Name", transform, UiTheme.Title, FontStyles.Bold);
 
         ConfigureText(bossNameText, new Vector2(0.07f, 0.62f), new Vector2(0.93f, 0.74f), UiTheme.Title, TextAlignmentOptions.Left);
+        // no gray backdrop anymore so the name has to be white to read on black
+        bossNameText.color = UiTheme.TextInverse;
         // pixel font runs wide, let long names shrink instead of spilling over the dialog
         bossNameText.enableAutoSizing = true;
         bossNameText.fontSizeMin = 10f;
         bossNameText.fontSizeMax = UiTheme.Title;
         bossNameText.textWrappingMode = TextWrappingModes.NoWrap;
         bossNameText.overflowMode = TextOverflowModes.Ellipsis;
+        // the name is a hover target for the aura/skills breakdown
+        bossNameText.raycastTarget = true;
+        nameHoverTarget = GetOrAddComponent<BossInfoHoverTarget>(bossNameText.gameObject);
 
         avatarRect = FindOrCreateRect("Avatar Placeholder", transform);
         ConfigureRect(avatarRect, new Vector2(0.07f, 0.18f), new Vector2(0.32f, 0.58f));
         Image avatarBackground = GetOrAddComponent<Image>(avatarRect.gameObject);
         avatarBackground.color = Color.black;
-        avatarBackground.raycastTarget = false;
+        // hover area for the portrait animation
+        avatarBackground.raycastTarget = true;
 
         if (avatarRect.GetComponent<RectMask2D>() == null)
             avatarRect.gameObject.AddComponent<RectMask2D>();
@@ -645,6 +707,10 @@ public class BossPanelView : MonoBehaviour
         avatarImage = GetOrAddComponent<Image>(avatarCurrentRect.gameObject);
         avatarImage.raycastTarget = false;
         avatarAnimator = GetOrAddComponent<AnimatedImageView>(avatarCurrentRect.gameObject);
+        // fill the whole frame, no side bars
+        avatarAnimator.SetPreserveAspect(false);
+        GetOrAddComponent<HoverAnimatedImageTrigger>(avatarRect.gameObject).Bind(avatarAnimator);
+        avatarHoverTarget = GetOrAddComponent<BossInfoHoverTarget>(avatarRect.gameObject);
         Transform legacyAvatarLabel = avatarRect.Find("Avatar Label");
 
         if (legacyAvatarLabel != null && legacyAvatarLabel.parent != avatarCurrentRect)
@@ -685,23 +751,65 @@ public class BossPanelView : MonoBehaviour
         ConfigureRect(dialogRect, new Vector2(0.38f, 0.18f), new Vector2(0.93f, 0.58f));
         dialogRect.SetAsFirstSibling();
         dialogBackgroundImage = GetOrAddComponent<Image>(dialogRect.gameObject);
-        dialogBackgroundImage.color = UiTheme.PanelBgDark;
-        dialogBackgroundImage.raycastTarget = false;
+        // dialogue floats on the screen now, no box behind it
+        dialogBackgroundImage.enabled = false;
 
         if (bossCommentText == null)
             bossCommentText = CreateText("Encounter Comment", transform, UiTheme.Heading, FontStyles.Normal);
 
         ConfigureText(bossCommentText, new Vector2(0.42f, 0.22f), new Vector2(0.9f, 0.54f), UiTheme.Body, TextAlignmentOptions.MidlineLeft);
+        // dialog bg is gone so the comment reads white on black
+        bossCommentText.color = UiTheme.TextInverse;
         // comment plus effect line can get long, shrink to fit the dialog box
         bossCommentText.enableAutoSizing = true;
         bossCommentText.fontSizeMin = 6f;
         bossCommentText.fontSizeMax = UiTheme.Body;
 
-        if (bossEffectText != null)
-            bossEffectText.gameObject.SetActive(false);
+        // boss skill gets its own little box under the dialogue now
+        effectBoxRect = FindOrCreateRect("Effect Box", transform);
+        ConfigureRect(effectBoxRect, new Vector2(0.38f, 0.04f), new Vector2(0.93f, 0.15f));
+        Image effectBoxImage = GetOrAddComponent<Image>(effectBoxRect.gameObject);
+        effectBoxImage.color = UiTheme.PanelBgDark;
+        effectBoxImage.raycastTarget = false;
+
+        if (bossEffectText == null)
+            bossEffectText = CreateText("Encounter Effect", effectBoxRect, UiTheme.Body, FontStyles.Normal);
+        else if (bossEffectText.transform.parent != effectBoxRect)
+            bossEffectText.transform.SetParent(effectBoxRect, false);
+
+        ConfigureRect(bossEffectText.rectTransform, new Vector2(0.03f, 0.05f), new Vector2(0.97f, 0.95f));
+        UiTheme.Style(bossEffectText, UiTheme.Body, FontStyles.Normal, UiTheme.TextPrimary, autoSize: true);
+        bossEffectText.fontSizeMin = 6f;
+        bossEffectText.alignment = TextAlignmentOptions.MidlineLeft;
+        bossEffectText.gameObject.SetActive(true);
 
         EnsureShopUi();
         EnsureTooltip();
+        EnsureBossInfoTooltip();
+    }
+
+    private void EnsureBossInfoTooltip()
+    {
+        if (bossInfoTooltip != null)
+            return;
+
+        GameObject tooltipObject = new("Boss Info Tooltip", typeof(RectTransform));
+        tooltipObject.transform.SetParent(ResolveTooltipParent(), false);
+        bossInfoTooltip = tooltipObject.AddComponent<RunProgressTooltipView>();
+        bossInfoTooltip.Hide();
+
+        // needs space for an aura line plus a few skill rows
+        if (tooltipObject.transform is RectTransform rectTransform)
+            rectTransform.sizeDelta = new Vector2(230f, 96f);
+    }
+
+    private void SetEffectBoxText(string value)
+    {
+        if (bossEffectText != null)
+            bossEffectText.text = value;
+
+        if (effectBoxRect != null)
+            effectBoxRect.gameObject.SetActive(false);
     }
 
     private void EnsureShopUi()
@@ -720,12 +828,7 @@ public class BossPanelView : MonoBehaviour
         rootLayout.childForceExpandWidth = true;
         rootLayout.childForceExpandHeight = false;
 
-        shopFeedbackText = CreateText("Shop Feedback", shopRoot, UiTheme.Small, FontStyles.Normal);
-        shopFeedbackText.color = UiTheme.TextPrimary;
-        shopFeedbackText.alignment = TextAlignmentOptions.Left;
-        shopFeedbackText.textWrappingMode = TextWrappingModes.NoWrap;
-        shopFeedbackText.overflowMode = TextOverflowModes.Ellipsis;
-        AddLayoutElement(shopFeedbackText.gameObject, 0f, 12f, 1f);
+        // shop feedback line removed, purchases just speak for themselfs
 
         RectTransform shelfList = FindOrCreateRect("Shelf List", shopRoot);
         VerticalLayoutGroup shelfLayout = GetOrAddComponent<VerticalLayoutGroup>(shelfList.gameObject);
@@ -895,6 +998,41 @@ public class BossPanelView : MonoBehaviour
     }
 }
 
+// hover target carrying prebuilt multiline text (aura plus skills) for the boss tooltip
+public class BossInfoHoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+{
+    private string infoText;
+    private RunProgressTooltipView tooltipView;
+
+    public void Bind(string text, RunProgressTooltipView tooltip)
+    {
+        infoText = text;
+        tooltipView = tooltip;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!string.IsNullOrEmpty(infoText))
+            tooltipView?.Show(infoText, eventData.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        tooltipView?.Hide();
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        tooltipView?.MoveTo(eventData.position);
+    }
+
+    private void OnDisable()
+    {
+        if (tooltipView != null)
+            tooltipView.Hide();
+    }
+}
+
 public class RunProgressView : MonoBehaviour
 {
     private readonly List<RuntimeRunNode> nodes = new();
@@ -996,7 +1134,8 @@ public class RunProgressView : MonoBehaviour
         image.preserveAspect = true;
 
         LayoutElement layoutElement = nodeObject.AddComponent<LayoutElement>();
-        layoutElement.minWidth = 18f;
+        // long routes squeeze nodes down toward minWidth so the strip never overflows
+        layoutElement.minWidth = 11f;
         layoutElement.preferredWidth = 18f;
         layoutElement.minHeight = 18f;
         layoutElement.preferredHeight = 18f;
@@ -1022,7 +1161,7 @@ public class RunProgressView : MonoBehaviour
         arrowRect.sizeDelta = new Vector2(8f, 18f);
 
         LayoutElement layoutElement = arrowObject.AddComponent<LayoutElement>();
-        layoutElement.minWidth = 8f;
+        layoutElement.minWidth = 4f;
         layoutElement.preferredWidth = 8f;
         layoutElement.minHeight = 18f;
         layoutElement.preferredHeight = 18f;
@@ -1169,6 +1308,7 @@ public class RunProgressTooltipView : MonoBehaviour
     private RectTransform rectTransform;
     private TMP_Text labelText;
     private Canvas canvas;
+    private CanvasGroup canvasGroup;
 
     private void Awake()
     {
@@ -1180,13 +1320,13 @@ public class RunProgressTooltipView : MonoBehaviour
     {
         EnsureUi();
         labelText.text = text;
-        gameObject.SetActive(true);
+        canvasGroup.alpha = 1f;
         MoveTo(screenPosition);
     }
 
     public void MoveTo(Vector2 screenPosition)
     {
-        if (!gameObject.activeSelf)
+        if (canvasGroup == null || canvasGroup.alpha <= 0f)
             return;
 
         EnsureUi();
@@ -1209,7 +1349,9 @@ public class RunProgressTooltipView : MonoBehaviour
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        // same alpha trick as the shop tooltip, SetActive ghosting
+        EnsureUi();
+        canvasGroup.alpha = 0f;
     }
 
     private void EnsureUi()
@@ -1218,14 +1360,15 @@ public class RunProgressTooltipView : MonoBehaviour
             return;
 
         rectTransform = GetOrAddComponent<RectTransform>(gameObject);
-        rectTransform.sizeDelta = new Vector2(126f, 28f);
+        // roomy enough for piece descs, short labels just center in it
+        rectTransform.sizeDelta = new Vector2(170f, 44f);
         canvas = GetComponentInParent<Canvas>();
 
         Image image = GetOrAddComponent<Image>(gameObject);
         image.color = UiTheme.TooltipBg;
         image.raycastTarget = false;
 
-        CanvasGroup canvasGroup = GetOrAddComponent<CanvasGroup>(gameObject);
+        canvasGroup = GetOrAddComponent<CanvasGroup>(gameObject);
         canvasGroup.blocksRaycasts = false;
 
         GameObject textObject = new("Text", typeof(RectTransform));
@@ -1238,9 +1381,11 @@ public class RunProgressTooltipView : MonoBehaviour
         textRect.offsetMax = new Vector2(-8f, -3f);
 
         labelText = textObject.AddComponent<TextMeshProUGUI>();
-        UiTheme.Style(labelText, UiTheme.Body, FontStyles.Normal, UiTheme.TextInverse);
+        UiTheme.Style(labelText, UiTheme.Body, FontStyles.Normal, UiTheme.TextInverse, autoSize: true);
+        // descs can run long, let them wrap and shrink to fit the bubble
+        labelText.fontSizeMin = 5f;
         labelText.alignment = TextAlignmentOptions.Center;
-        labelText.textWrappingMode = TextWrappingModes.NoWrap;
+        labelText.textWrappingMode = TextWrappingModes.Normal;
         labelText.raycastTarget = false;
     }
 

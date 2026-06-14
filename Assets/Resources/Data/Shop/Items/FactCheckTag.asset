@@ -22,10 +22,11 @@ MonoBehaviour:
   noiseDelta: 5
   setComposureToMax: 0
   setNoiseToZero: 0
-  uniquePerRun: 0
+  uniquePerRun: 1
   minRound: 0
   shelfWeight: 1
   effects:
-  - kind: 1
-    trollEffectType: 1
+  - kind: 10
+    trollEffectType: 0
     chance: 1
+    magnitude: 0

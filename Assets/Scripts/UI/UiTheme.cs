@@ -20,6 +20,8 @@ public static class UiTheme
     public static readonly Color TextInverse = Color.white;
     public static readonly Color TextMuted = new(0.68f, 0.68f, 0.68f, 1f);
     public static readonly Color AccentDanger = new(0.92f, 0.05f, 0.04f, 1f);
+    public static readonly Color AccentSafe = new(0.4f, 0.85f, 0.45f, 1f);
+    public static readonly Color AccentWarning = new(0.95f, 0.78f, 0.22f, 1f);
     public static readonly Color NodeDone = new(0.42f, 0.42f, 0.42f, 0.86f);
     public static readonly Color NodeCurrent = new(0.96f, 0.96f, 0.9f, 1f);
 

@@ -45,11 +45,17 @@ public class HudStatRowView : MonoBehaviour
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
 
+        // invisible plate so hovering anywhere on the row counts, not just the tiny icon
+        Image rowHoverPlate = GetOrAddComponent<Image>(gameObject);
+        rowHoverPlate.color = Color.clear;
+        rowHoverPlate.raycastTarget = true;
+
         iconImage = CreateIcon();
         iconAnimator = GetOrAddComponent<AnimatedImageView>(iconImage.gameObject);
-        GetOrAddComponent<HoverAnimatedImageTrigger>(iconImage.gameObject);
-        labelText = CreateText("Label", UiTheme.Small, FontStyles.Normal, 48f, TextAlignmentOptions.Left);
-        valueText = CreateText("Value", UiTheme.Small, FontStyles.Bold, 26f, TextAlignmentOptions.Right);
+        GetOrAddComponent<HoverAnimatedImageTrigger>(gameObject).Bind(iconAnimator);
+        // narrow hud slot, label gives way first and value keeps just enough room for three digits
+        labelText = CreateText("Label", UiTheme.Small, FontStyles.Normal, 30f, TextAlignmentOptions.Left);
+        valueText = CreateText("Value", UiTheme.Small, FontStyles.Bold, 16f, TextAlignmentOptions.Right);
     }
 
     private Image CreateIcon()
@@ -82,7 +88,7 @@ public class HudStatRowView : MonoBehaviour
         text.overflowMode = TextOverflowModes.Ellipsis;
 
         LayoutElement layoutElement = textObject.AddComponent<LayoutElement>();
-        layoutElement.minWidth = width;
+        layoutElement.minWidth = objectName == "Label" ? 0f : width;
         layoutElement.preferredWidth = width;
         layoutElement.flexibleWidth = objectName == "Label" ? 1f : 0f;
         return text;

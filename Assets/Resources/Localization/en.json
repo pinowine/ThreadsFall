@@ -97,20 +97,76 @@
       "value": "Effect: None"
     },
     {
+      "key": "piece.prop.long_take.name",
+      "value": "Long Take"
+    },
+    {
+      "key": "piece.prop.long_take.desc",
+      "value": "the straight four. one long committed post, digs you out of deep holes"
+    },
+    {
+      "key": "piece.prop.echo_chamber.name",
+      "value": "Echo Chamber"
+    },
+    {
+      "key": "piece.prop.echo_chamber.desc",
+      "value": "the square. same shape no matter how you spin it"
+    },
+    {
+      "key": "piece.prop.bait_hook.name",
+      "value": "Bait Hook"
+    },
+    {
+      "key": "piece.prop.bait_hook.desc",
+      "value": "the T. fits almost anywhere, that's what makes it bait"
+    },
+    {
+      "key": "piece.prop.misdirection.name",
+      "value": "Misdirection"
+    },
+    {
+      "key": "piece.prop.misdirection.desc",
+      "value": "S and Z. looks helpful, loves leaving holes behind"
+    },
+    {
+      "key": "piece.prop.derail.name",
+      "value": "Derail"
+    },
+    {
+      "key": "piece.prop.derail.desc",
+      "value": "L and J. corner pieces that bend the whole topic"
+    },
+    {
+      "key": "piece.tag.corrupted.name",
+      "value": "corrupted"
+    },
+    {
+      "key": "piece.tag.corrupted.desc",
+      "value": "clearing a line with a corrupted piece adds +10 noise"
+    },
+    {
+      "key": "piece.tag.glitched.name",
+      "value": "glitched"
+    },
+    {
+      "key": "piece.tag.glitched.desc",
+      "value": "30% chance to rotate the wrong way"
+    },
+    {
       "key": "boss.effect.algorithm",
-      "value": "Effect: +8 noise at round start, piece preview hidden"
+      "value": "Effect: -10% attention income, piece preview hidden, 30% of pieces come corrupted, fall speed +35%"
     },
     {
       "key": "boss.effect.anonymous",
-      "value": "Effect: piece preview is hidden this round"
+      "value": "Effect: piece preview is hidden this round; stays calm when noise is high"
     },
     {
       "key": "boss.effect.fake_scientist",
-      "value": "Effect: the piece preview lies about some types"
+      "value": "Effect: the piece preview lies sometimes; gets bolder the more Long Takes you lock"
     },
     {
       "key": "boss.effect.meme",
-      "value": "Effect: the piece preview lies about some types"
+      "value": "Effect: the piece preview lies, 35% of pieces come glitched"
     },
     {
       "key": "boss.effect.fanwar_idol",
@@ -222,7 +278,7 @@
     },
     {
       "key": "ui.preview.title",
-      "value": "Next Preview"
+      "value": "Pieces"
     },
     {
       "key": "ui.preview.normal",
@@ -338,7 +394,7 @@
     },
     {
       "key": "shop.item.archived_screenshot.effect",
-      "value": "Next round, boss obstacle placement is blocked."
+      "value": "Next boss, blocking cells are blocked."
     },
     {
       "key": "shop.item.text_wall.name",
@@ -350,7 +406,7 @@
     },
     {
       "key": "shop.item.text_wall.effect",
-      "value": "70% chance to remove one active abnormal effect."
+      "value": "Persistent: +10% attention income."
     },
     {
       "key": "shop.item.mute_word_engineering.name",
@@ -362,7 +418,7 @@
     },
     {
       "key": "shop.item.mute_word_engineering.effect",
-      "value": "Boss behavior intent is hidden for this run."
+      "value": "Persistent: noise can no longer scramble your screen."
     },
     {
       "key": "shop.item.breathing_draft.name",
@@ -374,7 +430,7 @@
     },
     {
       "key": "shop.item.breathing_draft.effect",
-      "value": "No special effect."
+      "value": "Persistent: +3 composure at every round start."
     },
     {
       "key": "shop.item.fifteen_minute_mute.name",
@@ -386,7 +442,7 @@
     },
     {
       "key": "shop.item.fifteen_minute_mute.effect",
-      "value": "Boss intent is hidden next round."
+      "value": "Next round, the boss cannot use any skill."
     },
     {
       "key": "shop.item.fact_check_tag.name",
@@ -398,7 +454,7 @@
     },
     {
       "key": "shop.item.fact_check_tag.effect",
-      "value": "Next round, fake next preview is blocked."
+      "value": "Persistent: the piece preview can no longer be hidden or faked."
     },
     {
       "key": "shop.item.moderation_queue.name",
@@ -422,7 +478,7 @@
     },
     {
       "key": "shop.item.slow_reply.effect",
-      "value": "Next round, trust reduction is blocked."
+      "value": "Persistent: fall speed -15%."
     },
     {
       "key": "shop.item.clear_cache.name",
@@ -434,7 +490,7 @@
     },
     {
       "key": "shop.item.clear_cache.effect",
-      "value": "Next round, hidden preview is blocked."
+      "value": "Noise resets to 0."
     },
     {
       "key": "shop.item.close_dms.name",
@@ -446,7 +502,7 @@
     },
     {
       "key": "shop.item.close_dms.effect",
-      "value": "Next round, noise increase is blocked."
+      "value": "Next boss, noise increase is blocked."
     },
     {
       "key": "shop.item.anti_empathy_filter.name",
@@ -458,7 +514,7 @@
     },
     {
       "key": "shop.item.anti_empathy_filter.effect",
-      "value": "Boss intent is hidden next round."
+      "value": "Next boss, corrupted pieces are blocked."
     },
     {
       "key": "shop.item.call_for_sources.name",
@@ -470,7 +526,7 @@
     },
     {
       "key": "shop.item.call_for_sources.effect",
-      "value": "Next round, fake next preview is blocked."
+      "value": "Persistent: the preview shows the true piece order and tags."
     },
     {
       "key": "shop.item.laugh_reaction.name",
@@ -482,7 +538,7 @@
     },
     {
       "key": "shop.item.laugh_reaction.effect",
-      "value": "No special effect."
+      "value": "Next boss, glitched pieces are blocked."
     },
     {
       "key": "shop.item.push_back.name",
@@ -490,11 +546,11 @@
     },
     {
       "key": "shop.item.push_back.desc",
-      "value": "You answer the pressure without letting it steer."
+      "value": "You answer firmly without letting the thread steer."
     },
     {
       "key": "shop.item.push_back.effect",
-      "value": "50% chance to remove one active abnormal effect."
+      "value": "Blocks the next boss skill."
     },
     {
       "key": "hud.attention",
@@ -543,6 +599,182 @@
     {
       "key": "hud.purchased_none",
       "value": "None yet"
+    },
+    {
+      "key": "hud.effects",
+      "value": "Effects"
+    },
+    {
+      "key": "effect.kind.add_noise",
+      "value": "{0} noise"
+    },
+    {
+      "key": "effect.kind.add_composure",
+      "value": "{0} composure"
+    },
+    {
+      "key": "effect.kind.add_attention",
+      "value": "{0} attention"
+    },
+    {
+      "key": "effect.kind.hide_preview",
+      "value": "preview hidden"
+    },
+    {
+      "key": "effect.kind.fake_preview",
+      "value": "fake preview"
+    },
+    {
+      "key": "effect.kind.garbage",
+      "value": "{0} blocking cell(s)"
+    },
+    {
+      "key": "effect.kind.block",
+      "value": "block {0}"
+    },
+    {
+      "key": "effect.kind.remove",
+      "value": "{0}% remove effect"
+    },
+    {
+      "key": "effect.kind.hide_intent",
+      "value": "hide boss intent"
+    },
+    {
+      "key": "effect.kind.corrupt",
+      "value": "{0}% corrupted pieces"
+    },
+    {
+      "key": "effect.kind.glitch",
+      "value": "{0}% glitched pieces"
+    },
+    {
+      "key": "effect.kind.fall_speed",
+      "value": "{0}% fall speed"
+    },
+    {
+      "key": "effect.row.blocked",
+      "value": "Blocked: {0}"
+    },
+    {
+      "key": "effect.source.boss",
+      "value": "Boss"
+    },
+    {
+      "key": "effect.source.item",
+      "value": "Item"
+    },
+    {
+      "key": "effect.source.unknown",
+      "value": "Unknown"
+    },
+    {
+      "key": "effect.status.active",
+      "value": "Active"
+    },
+    {
+      "key": "effect.status.pending",
+      "value": "Pending"
+    },
+    {
+      "key": "effect.status.blocked",
+      "value": "Blocked"
+    },
+    {
+      "key": "effect.status.consumed",
+      "value": "Consumed"
+    },
+    {
+      "key": "effect.value.yes",
+      "value": "Yes"
+    },
+    {
+      "key": "effect.value.no",
+      "value": "No"
+    },
+    {
+      "key": "effect.tooltip.source",
+      "value": "Source: {0}"
+    },
+    {
+      "key": "effect.tooltip.origin",
+      "value": "Origin: {0}"
+    },
+    {
+      "key": "effect.tooltip.trigger",
+      "value": "Trigger: {0}"
+    },
+    {
+      "key": "effect.tooltip.status",
+      "value": "Status: {0}"
+    },
+    {
+      "key": "effect.tooltip.consumed",
+      "value": "Consumed: {0}"
+    },
+    {
+      "key": "effect.trigger.on_acquire",
+      "value": "on buy"
+    },
+    {
+      "key": "effect.trigger.round_start",
+      "value": "round start"
+    },
+    {
+      "key": "effect.trigger.round_end",
+      "value": "round end"
+    },
+    {
+      "key": "effect.trigger.line_clear",
+      "value": "line clear"
+    },
+    {
+      "key": "effect.trigger.piece_locked",
+      "value": "piece locked"
+    },
+    {
+      "key": "effect.trigger.shop_enter",
+      "value": "shop enter"
+    },
+    {
+      "key": "effect.trigger.passive",
+      "value": "passive"
+    },
+    {
+      "key": "troll.type.none",
+      "value": "nothing"
+    },
+    {
+      "key": "troll.type.fake_preview",
+      "value": "fake preview"
+    },
+    {
+      "key": "troll.type.garbage",
+      "value": "blocking cells"
+    },
+    {
+      "key": "troll.type.hide_preview",
+      "value": "hidden preview"
+    },
+    {
+      "key": "troll.type.noise",
+      "value": "noise gain"
+    },
+    {
+      "key": "troll.type.trust",
+      "value": "composure loss"
+    },
+    {
+      "key": "troll.type.fall_speed",
+      "value": "fall speed"
+    },
+    {
+      "key": "troll.type.corrupt",
+      "value": "corrupted pieces"
+    },
+    {
+      "key": "troll.type.glitch",
+      "value": "glitched pieces"
     },
     {
       "key": "piece.type.i",
@@ -611,6 +843,62 @@
     {
       "key": "run.game_over.body",
       "value": "Score: {0}\nAttention: {1}\nLines: {2}\nComposure: {3}\nNoise: {4}"
+    },
+    {
+      "key": "preview.tags.title",
+      "value": "Tags"
+    },
+    {
+      "key": "effect.kind.top_garbage",
+      "value": "{0} junk block(s) near the top"
+    },
+    {
+      "key": "effect.kind.rotation_lock",
+      "value": "rotation locked for {0}s"
+    },
+    {
+      "key": "effect.kind.steal_line",
+      "value": "deletes your bottom line, no reward"
+    },
+    {
+      "key": "effect.kind.attention_percent",
+      "value": "{0}% attention income"
+    },
+    {
+      "key": "effect.kind.block_skill",
+      "value": "blocks the next boss skill"
+    },
+    {
+      "key": "effect.kind.disable_skills",
+      "value": "no boss skills next round"
+    },
+    {
+      "key": "effect.kind.true_preview",
+      "value": "preview cannot be hidden or faked"
+    },
+    {
+      "key": "effect.kind.reveal_tags",
+      "value": "shows the true piece order and tags"
+    },
+    {
+      "key": "effect.kind.block_corruption",
+      "value": "noise cannot scramble the screen"
+    },
+    {
+      "key": "boss.tooltip.skills",
+      "value": "Skills (fired mid-round):"
+    },
+    {
+      "key": "boss.tooltip.upcoming",
+      "value": "Next up: {0}"
+    },
+    {
+      "key": "shop.tooltip.persistent",
+      "value": "● Persistent effect"
+    },
+    {
+      "key": "shop.tooltip.one_time",
+      "value": "● One-time effect"
     }
   ]
 }

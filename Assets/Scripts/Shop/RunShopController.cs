@@ -118,6 +118,7 @@ public class RunShopController : MonoBehaviour
             return false;
 
         int cost = GetModifiedCost(item);
+        int attentionBeforePurchase = statsController.Attention;
 
         if (!statsController.TrySpendAttention(cost))
         {
@@ -126,6 +127,7 @@ public class RunShopController : MonoBehaviour
             return false;
         }
 
+        effectController?.QueuePressureReliefFromPurchase(item, attentionBeforePurchase);
         bool removeEffectFailed = ApplyItem(item);
 
         purchasedItems.Add(item);
@@ -170,7 +172,7 @@ public class RunShopController : MonoBehaviour
                 continue;
 
             // legacy shop specs flow through the shared effect pipeline now
-            removeEffectFailed |= !effectController.Apply(effect.ToEffectSpec(), item.itemId);
+            removeEffectFailed |= !effectController.Apply(effect.ToEffectSpec(), item.nameKey);
         }
 
         return removeEffectFailed;

@@ -64,6 +64,7 @@ public enum TrollTrigger
     ShopEnter
 }
 
+// new entries go at the end, ints are baked into boss and shop assets
 public enum TrollEffectType
 {
     None,
@@ -71,7 +72,10 @@ public enum TrollEffectType
     AddGarbageCell,
     HideNextPreview,
     IncreaseNoise,
-    ReduceTrust
+    ReduceTrust,
+    AccelerateFall,
+    CorruptPieces,
+    GlitchPieces
 }
 
 public enum PlayerState

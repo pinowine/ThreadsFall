@@ -38,6 +38,10 @@ public class TetrisBoardController : MonoBehaviour
     [SerializeField] private Color colorL = new(1f, 0.55f, 0f);
     [SerializeField] private Color borderBlockColor = Color.white;
     [SerializeField] private Color garbageBlockColor = new(0.45f, 0.45f, 0.45f, 1f);
+    // gap around each cell so the black bg works as grid lines
+    [SerializeField] private float cellVisualInset = 0.08f;
+    [SerializeField] private Color corruptedTint = new(0.55f, 0.3f, 0.7f, 1f);
+    [SerializeField] private Color glitchedTint = new(0.5f, 0.95f, 1f, 1f);
 
     public event Action PieceLocked;
     public event Action<int> LinesCleared;
@@ -64,6 +68,14 @@ public class TetrisBoardController : MonoBehaviour
     private float fallTimer;
     private bool hasActivePiece;
     private bool gameOverRaised;
+    private PieceTag activePieceTags;
+    private float corruptedPieceChance;
+    private float glitchedPieceChance;
+    private float fallSpeedMultiplier = 1f;
+    // boss skill: while this clock runs, rotation input is ignored
+    private float rotationLockedUntil = -1f;
+    private readonly HashSet<Transform> corruptedBlocks = new();
+    private readonly Dictionary<TetrominoType, int> lockedTypeCounts = new();
     private MaterialPropertyBlock blockPropertyBlock;
     private static Sprite solidBorderSprite;
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -139,7 +151,7 @@ public class TetrisBoardController : MonoBehaviour
 
         fallTimer += Time.deltaTime;
 
-        if (fallTimer >= fallInterval)
+        if (fallTimer >= fallInterval / Mathf.Max(0.25f, fallSpeedMultiplier))
         {
             fallTimer = 0f;
             StepDownByGravity();
@@ -189,6 +201,7 @@ public class TetrisBoardController : MonoBehaviour
 
         activeType = type;
         activeCells = TetrominoShape.GetCells(type);
+        activePieceTags = RollPieceTags();
         activePosition = new Vector2Int(width / 2, height - 2);
         if (!IsValidPosition(activePosition, activeCells))
         {
@@ -230,8 +243,148 @@ public class TetrisBoardController : MonoBehaviour
         CancelActivePieceForDebug();
         ClearLockedBlocks();
         gameOverRaised = false;
+        activePieceTags = PieceTag.None;
+        corruptedBlocks.Clear();
+        lockedTypeCounts.Clear();
         SetBoardActive(false);
         RaiseBoardChanged();
+    }
+
+    // effect system feeds these each round
+    public void ResetRoundModifiers()
+    {
+        corruptedPieceChance = 0f;
+        glitchedPieceChance = 0f;
+        fallSpeedMultiplier = 1f;
+        rotationLockedUntil = -1f;
+    }
+
+    public bool IsRotationLocked => Time.time < rotationLockedUntil;
+
+    // boss skill hook, freezes rotation for a few seconds
+    public void LockRotation(float seconds)
+    {
+        if (seconds <= 0f)
+            return;
+
+        rotationLockedUntil = Mathf.Max(rotationLockedUntil, Time.time + seconds);
+    }
+
+    // boss skill hook, junk cells appear in the danger zone just under the spawn rows
+    public void AddGarbageCellsNearTop(int count)
+    {
+        if (blockPrefab == null || grid == null || count <= 0)
+            return;
+
+        int rowMax = height - 3;
+        int rowMin = Mathf.Max(0, rowMax - 2);
+        List<Vector2Int> openCells = new();
+
+        for (int y = rowMin; y <= rowMax; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x, y] == null)
+                    openCells.Add(new Vector2Int(x, y));
+            }
+        }
+
+        int placed = 0;
+
+        while (placed < count && openCells.Count > 0)
+        {
+            int pick = UnityEngine.Random.Range(0, openCells.Count);
+            CreateGarbageBlock(openCells[pick]);
+            openCells.RemoveAt(pick);
+            placed++;
+        }
+
+        if (placed > 0)
+            RaiseBoardChanged();
+    }
+
+    // boss skill hook, deletes the lowest occupied row without paying any reward
+    public bool RemoveBottomLineNoReward()
+    {
+        if (grid == null)
+            return false;
+
+        for (int y = 0; y < height; y++)
+        {
+            bool hasBlock = false;
+
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x, y] != null)
+                {
+                    hasBlock = true;
+                    break;
+                }
+            }
+
+            if (!hasBlock)
+                continue;
+
+            ClearLine(y);
+            ShiftRowsDown(y + 1);
+            RaiseBoardChanged();
+            return true;
+        }
+
+        return false;
+    }
+
+    // boss debuff hook, positive percent speeds the fall up, negative slows it
+    public void AddFallSpeedPercent(int percent)
+    {
+        fallSpeedMultiplier = Mathf.Clamp(fallSpeedMultiplier * (1f + percent / 100f), 0.25f, 4f);
+    }
+
+    public float FallSpeedMultiplier => fallSpeedMultiplier;
+
+    public float GetBoardSpareScore()
+    {
+        if (grid == null || width <= 0 || height <= 0)
+            return 0.5f;
+
+        int totalCells = width * height;
+        int emptyCells = 0;
+        int topRows = Mathf.Min(4, height);
+        int topStart = height - topRows;
+        int topFilled = 0;
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x, y] == null)
+                {
+                    emptyCells++;
+                    continue;
+                }
+
+                if (y >= topStart)
+                    topFilled++;
+            }
+        }
+
+        float emptyScore = (float)emptyCells / totalCells;
+        float topCrowding = topRows > 0 ? (float)topFilled / (width * topRows) : 0f;
+        return Mathf.Clamp01(emptyScore - 0.25f * topCrowding);
+    }
+
+    public void AddRoundTagChance(PieceTag tag, float chance)
+    {
+        if ((tag & PieceTag.Corrupted) != 0)
+            corruptedPieceChance = Mathf.Clamp01(Mathf.Max(corruptedPieceChance, chance));
+
+        if ((tag & PieceTag.Glitched) != 0)
+            glitchedPieceChance = Mathf.Clamp01(Mathf.Max(glitchedPieceChance, chance));
+    }
+
+    public int GetLockedTypeCount(TetrominoType type)
+    {
+        return lockedTypeCounts.TryGetValue(type, out int count) ? count : 0;
     }
 
     // boss effect hook, drops locked junk cells into the lowest open rows
@@ -275,7 +428,7 @@ public class TetrisBoardController : MonoBehaviour
         GameObject block = Instantiate(blockPrefab, lockedBlockRoot);
         block.name = $"Garbage_{cell.x}_{cell.y}";
         block.SetActive(true);
-        block.transform.localScale = GetBlockScale();
+        block.transform.localScale = GetCellVisualScale();
         block.transform.position = CellToWorld(cell);
 
         SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
@@ -354,6 +507,13 @@ public class TetrisBoardController : MonoBehaviour
         if (!hasActivePiece || !TetrominoShape.CanRotate(activeType))
             return;
 
+        if (IsRotationLocked)
+            return;
+
+        // glitched piece sometimes just spins the other way
+        if ((activePieceTags & PieceTag.Glitched) != 0 && UnityEngine.Random.value < 0.3f)
+            clockwise = !clockwise;
+
         Vector2Int[] rotated = new Vector2Int[activeCells.Length];
 
         for (int i = 0; i < activeCells.Length; i++)
@@ -398,8 +558,13 @@ public class TetrisBoardController : MonoBehaviour
 
             visual.SetParent(lockedBlockRoot);
             grid[cell.x, cell.y] = visual;
+
+            if ((activePieceTags & PieceTag.Corrupted) != 0)
+                corruptedBlocks.Add(visual);
         }
 
+        lockedTypeCounts[activeType] = GetLockedTypeCount(activeType) + 1;
+        activePieceTags = PieceTag.None;
         activeVisuals.Clear();
         hasActivePiece = false;
 
@@ -438,13 +603,16 @@ public class TetrisBoardController : MonoBehaviour
     private int ClearFullLines()
     {
         int cleared = 0;
+        int corruptedLines = 0;
 
         for (int y = 0; y < height; y++)
         {
             if (!IsLineFull(y))
                 continue;
 
-            ClearLine(y);
+            if (ClearLine(y))
+                corruptedLines++;
+
             ShiftRowsDown(y + 1);
             cleared++;
             // re-check this y because the row above just shifted into it
@@ -453,6 +621,9 @@ public class TetrisBoardController : MonoBehaviour
 
         if (cleared > 0)
             Debug.Log($"Cleared lines: {cleared}");
+
+        if (corruptedLines > 0)
+            GameEvents.CorruptedLineCleared(corruptedLines);
 
         return cleared;
     }
@@ -468,16 +639,24 @@ public class TetrisBoardController : MonoBehaviour
         return true;
     }
 
-    private void ClearLine(int y)
+    // returns true if the line had a corrupted block in it
+    private bool ClearLine(int y)
     {
+        bool hadCorrupted = false;
+
         for (int x = 0; x < width; x++)
         {
             if (grid[x, y] == null)
                 continue;
 
+            if (corruptedBlocks.Remove(grid[x, y]))
+                hadCorrupted = true;
+
             DestroyObject(grid[x, y].gameObject);
             grid[x, y] = null;
         }
+
+        return hadCorrupted;
     }
 
     private void ShiftRowsDown(int startY)
@@ -512,18 +691,44 @@ public class TetrisBoardController : MonoBehaviour
         return false;
     }
 
+    private PieceTag RollPieceTags()
+    {
+        PieceTag tags = PieceTag.None;
+
+        if (corruptedPieceChance > 0f && UnityEngine.Random.value < corruptedPieceChance)
+            tags |= PieceTag.Corrupted;
+
+        if (glitchedPieceChance > 0f && UnityEngine.Random.value < glitchedPieceChance)
+            tags |= PieceTag.Glitched;
+
+        return tags;
+    }
+
+    private Color ApplyTagTint(Color baseColor)
+    {
+        Color tinted = baseColor;
+
+        if ((activePieceTags & PieceTag.Corrupted) != 0)
+            tinted = Color.Lerp(tinted, corruptedTint, 0.6f);
+
+        if ((activePieceTags & PieceTag.Glitched) != 0)
+            tinted = Color.Lerp(tinted, glitchedTint, 0.5f);
+
+        return tinted;
+    }
+
     private void CreateActiveVisuals()
     {
         ClearActiveVisuals();
 
-        Color color = GetColor(activeType);
+        Color color = ApplyTagTint(GetColor(activeType));
 
         for (int i = 0; i < activeCells.Length; i++)
         {
             GameObject block = Instantiate(blockPrefab, activeBlockRoot);
             block.name = $"Active_{activeType}_{i}";
             block.SetActive(true);
-            block.transform.localScale = GetBlockScale();
+            block.transform.localScale = GetCellVisualScale();
 
             SpriteRenderer spriteRenderer = block.GetComponentInChildren<SpriteRenderer>(true);
 
@@ -700,6 +905,12 @@ public class TetrisBoardController : MonoBehaviour
     private Vector3 GetBlockScale()
     {
         return Vector3.one * Mathf.Max(0.05f, cellSize);
+    }
+
+    private Vector3 GetCellVisualScale()
+    {
+        // smaller than the cell so each block gets its black outline
+        return Vector3.one * Mathf.Max(0.05f, cellSize - cellVisualInset);
     }
 
     private Vector2Int WorldToCell(Vector3 worldPosition)

@@ -8,6 +8,8 @@ public class AnimatedImageView : MonoBehaviour
     [SerializeField] private Image targetImage;
     [SerializeField] private SpriteSequenceDefinition sequence;
     [SerializeField] private bool playOnEnable;
+    // off when the art should stretch to fill its frame
+    [SerializeField] private bool preserveAspect = true;
 
     private float frameTimer;
     private int frameIndex;
@@ -125,7 +127,15 @@ public class AnimatedImageView : MonoBehaviour
         int safeIndex = Mathf.Clamp(index, 0, sequence.frames.Count - 1);
         targetImage.sprite = sequence.frames[safeIndex];
         targetImage.color = Color.white;
-        targetImage.preserveAspect = true;
+        targetImage.preserveAspect = preserveAspect;
+    }
+
+    public void SetPreserveAspect(bool preserve)
+    {
+        preserveAspect = preserve;
+
+        if (targetImage != null)
+            targetImage.preserveAspect = preserve;
     }
 
     private void EnsureImage()
@@ -143,6 +153,12 @@ public class HoverAnimatedImageTrigger : MonoBehaviour, IPointerEnterHandler, IP
     {
         if (animatedImage == null)
             animatedImage = GetComponent<AnimatedImageView>();
+    }
+
+    // so a bigger hover area (like a whole hud row) can drive someone else's animation
+    public void Bind(AnimatedImageView target)
+    {
+        animatedImage = target;
     }
 
     public void OnPointerEnter(PointerEventData eventData)

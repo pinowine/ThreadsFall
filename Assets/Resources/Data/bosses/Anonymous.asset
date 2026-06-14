@@ -20,6 +20,7 @@ MonoBehaviour:
   effectKey: boss.effect.anonymous
   avatarSequence: {fileID: 11400000, guid: 811eaa12a7330fe45b8093265ba7cf38, type: 2}
   routeWeight: 1
+  basePressure: 90
   effects:
   - trigger: 1
     kind: 4
@@ -27,3 +28,25 @@ MonoBehaviour:
     magnitude: 0
     chance: 1
     durationRounds: 0
+    mood: 1
+  skills:
+  - trigger: 0
+    kind: 13
+    trollEffectType: 0
+    magnitude: 3
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  - trigger: 0
+    kind: 15
+    trollEffectType: 0
+    magnitude: 1
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 8
+  skillChance: 0.55
+  preferredPieces:
+  - 2
+  - 3
+  preferredPieceBias: 2.5

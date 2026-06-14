@@ -25,4 +25,7 @@ MonoBehaviour:
   uniquePerRun: 0
   minRound: 0
   shelfWeight: 0.8
-  effects: []
+  effects:
+  - kind: 1
+    trollEffectType: 8
+    chance: 1

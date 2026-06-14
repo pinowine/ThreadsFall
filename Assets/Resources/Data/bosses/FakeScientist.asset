@@ -20,10 +20,26 @@ MonoBehaviour:
   effectKey: boss.effect.fake_scientist
   avatarSequence: {fileID: 11400000, guid: d8f9c062f9c0eb744bf87632548858bb, type: 2}
   routeWeight: 1
+  basePressure: 70
   effects:
   - trigger: 1
     kind: 5
     trollEffectType: 1
     magnitude: 0
+    chance: 0.6
+    durationRounds: 0
+    mood: 2
+  skills:
+  - trigger: 0
+    kind: 14
+    trollEffectType: 0
+    magnitude: 10
     chance: 1
     durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 9
+  skillChance: 0.5
+  preferredPieces:
+  - 0
+  - 1
+  preferredPieceBias: 2.5

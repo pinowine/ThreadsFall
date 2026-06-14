@@ -20,6 +20,7 @@ MonoBehaviour:
   effectKey: boss.effect.flamebait
   avatarSequence: {fileID: 11400000, guid: a3e154a7193261c448fdc08689f2c2a6, type: 2}
   routeWeight: 1
+  basePressure: 68
   effects:
   - trigger: 4
     kind: 1
@@ -27,3 +28,18 @@ MonoBehaviour:
     magnitude: 3
     chance: 0.25
     durationRounds: 0
+    mood: 0
+  skills:
+  - trigger: 0
+    kind: 1
+    trollEffectType: 4
+    magnitude: 8
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 8
+  skillChance: 0.55
+  preferredPieces:
+  - 2
+  - 4
+  preferredPieceBias: 2.5

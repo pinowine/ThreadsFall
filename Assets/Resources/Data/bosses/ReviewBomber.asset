@@ -20,6 +20,7 @@ MonoBehaviour:
   effectKey: boss.effect.review_bomber
   avatarSequence: {fileID: 11400000, guid: 0d41f1139700bb94e9c0401757b01703, type: 2}
   routeWeight: 1
+  basePressure: 70
   effects:
   - trigger: 3
     kind: 2
@@ -27,3 +28,18 @@ MonoBehaviour:
     magnitude: -3
     chance: 1
     durationRounds: 0
+    mood: 0
+  skills:
+  - trigger: 0
+    kind: 15
+    trollEffectType: 0
+    magnitude: 1
+    chance: 1
+    durationRounds: 0
+    mood: 0
+  skillIntervalSeconds: 9
+  skillChance: 0.55
+  preferredPieces:
+  - 4
+  - 3
+  preferredPieceBias: 2.5

@@ -26,6 +26,7 @@ MonoBehaviour:
   minRound: 1
   shelfWeight: 0.8
   effects:
-  - kind: 2
+  - kind: 5
     trollEffectType: 0
-    chance: 0.5
+    chance: 1
+    magnitude: 0

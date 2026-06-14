@@ -32,11 +32,12 @@ public class RoundFlowController : MonoBehaviour
     [SerializeField] private bool enableDebugHotkeys = true;
 
     [Header("Run Route")]
-    [SerializeField] private int expectedNodeCount = 7;
+    // route shape: opening searches, mini boss, mid searches, mini boss, late searches, final boss
+    [SerializeField] private Vector2Int openingSearchNodes = new(3, 4);
+    [SerializeField] private Vector2Int midSearchNodes = new(2, 3);
+    [SerializeField] private Vector2Int lateSearchNodes = new(1, 2);
     [SerializeField] private int initialPieceCount = 10;
     [SerializeField] private int pieceCountIncreasePerNode = 5;
-    [SerializeField] private List<int> miniBossExpectedNodes = new() { 3, 5 };
-    [SerializeField] private int miniBossJitter = 2;
     // used only when boss catalog assets are missing
     [SerializeField] private List<BossId> miniBossPool = new() { BossId.FalseHelper, BossId.Spammer };
     [SerializeField] private List<BossId> finalBossPool = new() { BossId.Algorithm };
@@ -62,8 +63,8 @@ public class RoundFlowController : MonoBehaviour
 
     private readonly List<RuntimeRunNode> runtimeNodes = new();
     private readonly List<TetrominoType> reusablePieceBag = new();
-    private readonly List<int> reusableMiniBossNodes = new();
-    private readonly HashSet<int> reusableNodeNumbers = new();
+    private readonly List<RunNodeType> reusableRouteShape = new();
+    private readonly List<PieceTagSummary> reusableTagSummaries = new();
     private readonly HashSet<BossId> reusableUsedBosses = new();
     private readonly HashSet<string> reusableUsedBossKeys = new();
     private readonly List<BossId> reusableBossCandidates = new();
@@ -146,6 +147,7 @@ public class RoundFlowController : MonoBehaviour
         {
             statsHudView.SetStatsController(statsController);
             statsHudView.SetShopController(shopController);
+            statsHudView.SetEffectSystem(effectController);
         }
 
         if (bossPanelView != null)
@@ -223,13 +225,21 @@ public class RoundFlowController : MonoBehaviour
         statsController.SetCurrentRoundIndex(node.NodeIndex);
         statsController.ApplyRoundStartNoise();
         effectController.BeginRound(node.NodeIndex);
-        // boss skills come online before the preview renders so hide and fake apply
+        // boss auras come online before the preview renders so hide and fake apply
         effectController.RegisterBossEffects(node.BossDefinition);
+        // skills fire even on search nodes: the next boss up the route interferes early
+        effectController.SetSkillSource(
+            node.BossDefinition != null ? node.BossDefinition : FindUpcomingBossDefinition(currentRoundIndex),
+            node.BossDefinition != null);
         effectController.Fire(EffectTrigger.RoundStart);
         pieceProvider.SetRoundPieces(nodePieces);
 
         if (piecePreviewView != null)
+        {
             piecePreviewView.ShowRoundPieces(nodePieces);
+            effectController.GetActiveTagSummaries(reusableTagSummaries);
+            piecePreviewView.SetIncomingTags(reusableTagSummaries);
+        }
 
         if (bossPanelView != null)
         {
@@ -292,6 +302,7 @@ public class RoundFlowController : MonoBehaviour
         acceptingShopInput = false;
         EnterState(RunGameState.RoundResolution);
         effectController.Fire(EffectTrigger.RoundEnd);
+        effectController.EndRound();
 
         bool completesRun = !playerLost && currentRoundIndex >= runtimeNodes.Count - 1;
 
@@ -564,19 +575,20 @@ public class RoundFlowController : MonoBehaviour
         runRandom = new System.Random(currentRunSeed);
         runtimeNodes.Clear();
 
-        int nodeCount = Mathf.Max(1, expectedNodeCount);
+        BuildRouteShape();
+        int nodeCount = reusableRouteShape.Count;
         int finalNodeNumber = nodeCount;
-        reusableMiniBossNodes.Clear();
-        reusableMiniBossNodes.AddRange(SelectMiniBossNodeNumbers(finalNodeNumber));
-        reusableMiniBossNodes.Sort();
 
         Dictionary<int, BossDefinition> miniBossesByNode = new();
         reusableUsedBosses.Clear();
         reusableUsedBossKeys.Clear();
 
-        for (int i = 0; i < reusableMiniBossNodes.Count; i++)
+        for (int i = 0; i < reusableRouteShape.Count; i++)
         {
-            int nodeNumber = reusableMiniBossNodes[i];
+            if (reusableRouteShape[i] != RunNodeType.MiniBoss)
+                continue;
+
+            int nodeNumber = i + 1;
             miniBossesByNode[nodeNumber] = DrawBossDefinition(RunNodeType.MiniBoss, reusableUsedBossKeys, GetAuthoredBossFallback(nodeNumber - 1, BossId.FalseHelper));
         }
 
@@ -587,7 +599,7 @@ public class RoundFlowController : MonoBehaviour
 
         for (int nodeNumber = 1; nodeNumber <= nodeCount; nodeNumber++)
         {
-            RunNodeType nodeType = GetNodeType(nodeNumber, finalNodeNumber, miniBossesByNode);
+            RunNodeType nodeType = reusableRouteShape[nodeNumber - 1];
             BossDefinition bossDefinition = GetNodeBossDefinition(nodeNumber, nodeType, finalBoss, miniBossesByNode);
             BossId bossId = bossDefinition != null
                 ? bossDefinition.bossId
@@ -603,75 +615,32 @@ public class RoundFlowController : MonoBehaviour
                 bossDefinition,
                 GetDisplayNameKey(nodeType, bossId, bossDefinition),
                 pieceCount,
-                CreateRandomPieceSequence(pieceCount)
+                CreateRandomPieceSequence(pieceCount, bossDefinition)
             ));
         }
 
         Debug.Log($"Run seed: {currentRunSeed}, nodes: {runtimeNodes.Count}");
     }
 
-    private IReadOnlyList<int> SelectMiniBossNodeNumbers(int finalNodeNumber)
+    private void BuildRouteShape()
     {
-        reusableNodeNumbers.Clear();
-
-        int maxMiniBossCount = Mathf.Clamp(miniBossExpectedNodes != null ? miniBossExpectedNodes.Count : 0, 0, Mathf.Max(0, finalNodeNumber - 1));
-
-        for (int i = 0; i < maxMiniBossCount; i++)
-        {
-            int expectedNode = Mathf.Max(1, miniBossExpectedNodes[i]);
-            int nodeNumber = PickMiniBossNodeNumber(expectedNode, finalNodeNumber);
-
-            if (nodeNumber > 0)
-                reusableNodeNumbers.Add(nodeNumber);
-        }
-
-        reusableMiniBossNodes.Clear();
-        reusableMiniBossNodes.AddRange(reusableNodeNumbers);
-        return reusableMiniBossNodes;
+        reusableRouteShape.Clear();
+        AppendSearchNodes(openingSearchNodes);
+        reusableRouteShape.Add(RunNodeType.MiniBoss);
+        AppendSearchNodes(midSearchNodes);
+        reusableRouteShape.Add(RunNodeType.MiniBoss);
+        AppendSearchNodes(lateSearchNodes);
+        reusableRouteShape.Add(RunNodeType.FinalBoss);
     }
 
-    private int PickMiniBossNodeNumber(int expectedNode, int finalNodeNumber)
+    private void AppendSearchNodes(Vector2Int range)
     {
-        int minNode = 1;
-        int maxNode = Mathf.Max(1, finalNodeNumber - 1);
-        int jitter = Mathf.Max(0, miniBossJitter);
+        int count = NextInclusive(Mathf.Min(range.x, range.y), Mathf.Max(range.x, range.y));
 
-        for (int attempt = 0; attempt < 24; attempt++)
+        for (int i = 0; i < count; i++)
         {
-            int candidate = Mathf.Clamp(expectedNode + NextInclusive(-jitter, jitter), minNode, maxNode);
-
-            if (!reusableNodeNumbers.Contains(candidate))
-                return candidate;
+            reusableRouteShape.Add(RunNodeType.Normal);
         }
-
-        return FindNearestAvailableNode(expectedNode, minNode, maxNode);
-    }
-
-    private int FindNearestAvailableNode(int expectedNode, int minNode, int maxNode)
-    {
-        int clampedExpected = Mathf.Clamp(expectedNode, minNode, maxNode);
-
-        for (int offset = 0; offset <= maxNode - minNode; offset++)
-        {
-            int lower = clampedExpected - offset;
-            int upper = clampedExpected + offset;
-
-            if (lower >= minNode && !reusableNodeNumbers.Contains(lower))
-                return lower;
-
-            if (upper <= maxNode && !reusableNodeNumbers.Contains(upper))
-                return upper;
-        }
-
-        return -1;
-    }
-
-    private RunNodeType GetNodeType(int nodeNumber, int finalNodeNumber, Dictionary<int, BossDefinition> miniBossesByNode)
-    {
-        if (nodeNumber == finalNodeNumber)
-            return RunNodeType.FinalBoss;
-
-        return miniBossesByNode.ContainsKey(nodeNumber) ? RunNodeType.MiniBoss : RunNodeType.Normal;
     }
 
     private BossDefinition GetNodeBossDefinition(int nodeNumber, RunNodeType nodeType, BossDefinition finalBoss, Dictionary<int, BossDefinition> miniBossesByNode)
@@ -716,9 +685,43 @@ public class RoundFlowController : MonoBehaviour
         return nodeType == RunNodeType.FinalBoss ? "run.node.final.name" : "run.node.mini_boss.name";
     }
 
-    private List<TetrominoType> CreateRandomPieceSequence(int pieceCount)
+    private List<TetrominoType> CreateRandomPieceSequence(int pieceCount, BossDefinition boss)
     {
         List<TetrominoType> pieces = new();
+        bool biased = boss != null && boss.preferredPieces != null && boss.preferredPieces.Count > 0;
+
+        if (biased)
+        {
+            // boss nodes lean toward the boss favorite piece properties
+            float bias = Mathf.Max(1f, boss.preferredPieceBias);
+            float totalWeight = 0f;
+            float[] weights = new float[AllTetrominoTypes.Length];
+
+            for (int i = 0; i < AllTetrominoTypes.Length; i++)
+            {
+                weights[i] = boss.preferredPieces.Contains(PieceLore.GetProperty(AllTetrominoTypes[i])) ? bias : 1f;
+                totalWeight += weights[i];
+            }
+
+            while (pieces.Count < pieceCount)
+            {
+                float roll = (float)(runRandom.NextDouble() * totalWeight);
+                float cumulative = 0f;
+
+                for (int i = 0; i < AllTetrominoTypes.Length; i++)
+                {
+                    cumulative += weights[i];
+
+                    if (roll <= cumulative)
+                    {
+                        pieces.Add(AllTetrominoTypes[i]);
+                        break;
+                    }
+                }
+            }
+
+            return pieces;
+        }
 
         while (pieces.Count < pieceCount)
         {
@@ -828,6 +831,17 @@ public class RoundFlowController : MonoBehaviour
             bossCatalog = BossCatalog.ResolveDefault();
 
         return bossCatalog;
+    }
+
+    private BossDefinition FindUpcomingBossDefinition(int fromIndex)
+    {
+        for (int i = Mathf.Max(0, fromIndex + 1); i < runtimeNodes.Count; i++)
+        {
+            if (runtimeNodes[i] != null && runtimeNodes[i].IsBossNode && runtimeNodes[i].BossDefinition != null)
+                return runtimeNodes[i].BossDefinition;
+        }
+
+        return null;
     }
 
     private BossId GetAuthoredBossFallback(int sourceIndex, BossId fallback)

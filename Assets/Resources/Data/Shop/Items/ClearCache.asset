@@ -19,13 +19,10 @@ MonoBehaviour:
   effectSummaryKey: shop.item.clear_cache.effect
   baseAttentionCost: 75
   composureDelta: 0
-  noiseDelta: -15
+  noiseDelta: 0
   setComposureToMax: 0
-  setNoiseToZero: 0
+  setNoiseToZero: 1
   uniquePerRun: 0
   minRound: 0
   shelfWeight: 1
-  effects:
-  - kind: 1
-    trollEffectType: 3
-    chance: 1
+  effects: []
