@@ -18,23 +18,23 @@
 
 ## 项目图片
 
-![Play](assets/final/1.jpg)
+![Play](Assets/final/1.jpg)
 
 <sub>图 1 为了提高可访问性，项目使用几乎所有电脑用户都拥有的鼠标和键盘进行控制。</sub>
 
-![Info1](assets/final/final.png)
+![Info1](Assets/final/final.png)
 
 <sub>图 2 最终项目运行时截图。</sub>
 
-![Info2](assets/final/6.png)
+![Info2](Assets/final/6.png)
 
 <sub>图 3 悬停鼠标可以查看更多信息。</sub>
 
-![Info3](assets/final/7.png)
+![Info3](Assets/final/7.png)
 
 <sub>图 4 商店页面。玩家可以购买带有特殊效果的道具。</sub>
 
-![Info4](assets/final/8.png)
+![Info4](Assets/final/8.png)
 
 <sub>图 5 过高的 Noise 会导致文本变成乱码，表示信息流正在被噪音过度干扰。</sub>
 
@@ -58,7 +58,7 @@ AI 辅助完成的任务包括：
    - 使用 LLM 翻译的本地化键值对（简体中文和英文双语）
    - 在视觉素材完成前临时使用的 Image 组件占位图
 
-![Ghost](assets/final/ghost.png)
+![Ghost](Assets/final/ghost.png)
 
 <sub>图 6 Ghost Text（位于画面上方）。</sub>
 
@@ -70,7 +70,7 @@ AI 辅助完成的任务包括：
 
 第一轮是简单的原型测试，参与者是几位英国以外的游戏开发者。测试使用 FigJam 和屏幕共享进行概念讨论，以及一些基础可用性测试。测试目的，是在正式开发前讨论玩法的可行性，以及概念之间的结合程度。但结果并不理想，所以我调整了方向。
 
-![PRB](assets/final/prb.png)
+![PRB](Assets/final/prb.png)
 
 <sub>图 7 原型测试 FigJam 看板。</sub>
 
@@ -88,7 +88,7 @@ AI 辅助完成的任务包括：
 
 ### 测试观察
 
-![interview](assets/final/interview.jpg)
+![interview](Assets/final/interview.jpg)
 
 <sub>图 8 观察过程中的快速记录。</sub>
 
