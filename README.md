@@ -112,21 +112,6 @@ AI 辅助完成的任务包括：
 
 最后，我会继续改进英文/中文本地化，并加入色盲模式等可访问性选项。
 
-## Lab 链接
-
-1. [游戏原型](Week1.md)：创建游戏原型和快速 play-test 的方法（用于早期开发）；
-2. [`ScriptableObjects`](Week3.md)：使用这个功能可以基于模板快速创建相似对象；只需要把它们拖进 inspector 的插槽，就能创建大量实例；
-3. [`OOP`](Week4.md)：一些关于使用面向对象编程语言的反思，也巩固了我的相关知识和实践技能。
-
-## Sprint 链接
-
-- [Sprint 1](Sprint1.md)：Triple Tetris
-- [Sprint 2](Sprint2.md)：Aquatic Ecosystem
-
-## Pecha-Kucha 幻灯片
-
-[幻灯片](assets/final/slides.pptx)
-
 ## 参考文献列表
 
 - Marzęda, A. (2025). Diversity and complexity of online trolling: an extended classification and analysis of social consequences. Media Biznes Kultura, 19(2), 59-96. https://doi.org/10.4467/25442554.MBK.25.018.22867.
